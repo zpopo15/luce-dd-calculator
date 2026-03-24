@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>DigiDollar Compounding Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cardo&family=Josefin+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: rgb(245, 249, 255);
+      --card: #ffffff;
+      --text: #1f2937;
+      --border: #d0d7e2;
+      --primary: #2563eb;
+      --input-bg: #ffffff;
+      --input-text: #1f2937;
+      --input-border: #c7d2fe;
+      --muted: #6b7280;
+      --gain: #16a34a;
+      --loss: #dc2626;
+      --divider: #e8edf5;
+      --warn: #b45309;
+      --warn-bg: #fffbeb;
+      --warn-border: #fcd34d;
+    }
+    [data-theme="dark"] {
+      --bg: rgb(37, 43, 52);
+      --card: #1e2630;
+      --text: #e5e7eb;
+      --border: #2f3a46;
+      --primary: #3b82f6;
+      --input-bg: #2a3441;
+      --input-text: #e5e7eb;
+      --input-border: #3b4756;
+      --muted: #9ca3af;
+      --gain: #22c55e;
+      --loss: #f87171;
+      --divider: #26333f;
+      --warn: #fbbf24;
+      --warn-bg: #1c1a0e;
+      --warn-border: #78560a;
+    }
+    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+    body { margin: 0; padding: clamp(12px, 3vw, 24px); background: var(--bg); color: var(--text); transition: background 0.3s ease, color 0.3s ease; }
+    h2, h3 { font-family: 'Cardo', serif; font-weight: 400; text-align: center; margin-top: 0; margin-bottom: 16px; }
+    h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+    h3 { font-size: clamp(1.1rem, 3vw, 1.4rem); margin-bottom: 12px; }
+    .container { max-width: min(92vw, 820px); margin: auto; }
+    .box { background: var(--card); border-radius: 14px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 6px 16px rgba(0,0,0,.08); width: 100%; transition: background 0.3s ease, border 0.3s ease; }
+    label { display: block; margin-top: 8px; margin-bottom: 6px; font-size: 14px; font-weight: 400; color: var(--text); opacity: 0.9; }
+    input, select { width: 100%; font-size: 14px; padding: 11px; border-radius: 10px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--input-text); font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s; }
+    select { -webkit-appearance: none; -moz-appearance: none; appearance: none; padding-right: 36px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; cursor: pointer; height: 47px; }
+    [data-theme="dark"] select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239ca3af'/%3E%3C/svg%3E"); }
+    input:focus, select:focus { border-color: var(--primary); }
+    select option { background: var(--card); color: var(--text); }
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 520px) { .input-row { grid-template-columns: 1fr; } }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .group-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    a.live-pill { font-size: 10px; color: var(--primary); background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 4px; padding: 2px 7px; text-decoration: none; vertical-align: middle; white-space: nowrap; font-weight: 600; }
+    a.live-pill:hover { border-color: var(--primary); }
+    .spinner-wrap { display:flex; border:1px solid var(--input-border); border-radius:10px; overflow:hidden; background:var(--input-bg); transition: border-color 0.2s; }
+    .spinner-wrap:focus-within { border-color: var(--primary); }
+    .spinner-wrap input { border:none; border-radius:0; flex:1; background:transparent; outline:none; }
+    .spinner-wrap input:focus { border-color: transparent; }
+    .spinner-btns { display:flex; flex-direction:column; border-left:1px solid var(--input-border); flex-shrink:0; }
+    .spinner-btn { all:unset; width:30px; height:22px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); font-size:9px; background:var(--input-bg); transition: color 0.15s; }
+    .spinner-btn:first-child { border-bottom:1px solid var(--input-border); }
+    .spinner-btn:hover { color:var(--text); }
+    .spinner-wrap input[type=number]::-webkit-inner-spin-button,
+    .spinner-wrap input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .spinner-wrap input[type=number] { -moz-appearance: textfield; }
+    .divider { border: none; border-top: 1px solid var(--divider); margin: 20px 0; }
+
+    button, .theme-button {
+      display: block; width: 100%; height: 50px; line-height: 50px; padding: 0 40px; margin: 12px auto 0 auto;
+      border-radius: 10px; border: none; box-sizing: border-box; font-family: 'Josefin Sans', sans-serif;
+      font-size: 14px; font-weight: 400; text-align: center; white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; color: #ffffff; cursor: pointer;
+      background-image: linear-gradient(-180deg, rgb(102,186,241) 0%, rgb(51,130,209) 96%);
+      background-color: rgb(51,130,209); transition: background-image 0.2s ease; -webkit-tap-highlight-color: transparent;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      button:hover, .theme-button:hover { background-image: linear-gradient(-180deg, rgb(51,130,209) 0%, rgb(51,130,209) 96%); }
+    }
+    button:active, .theme-button:active { background-image: linear-gradient(-180deg, rgba(102,186,241,1) 0%, rgba(102,186,241,1) 96%); }
+    .theme-button { margin: 0 auto 20px auto; width: auto; }
+
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+    .metric-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; text-align: center; }
+    .metric-label { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: 0.03em; margin-bottom: 4px; text-transform: uppercase; }
+    .metric-value { font-size: 17px; font-weight: 700; color: var(--text); font-family: 'Montserrat', sans-serif; }
+    .metric-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .metric-card.gain .metric-value { color: #3b82f6; }
+    .metric-card.accent .metric-value { color: var(--gain); }
+
+    .chart-wrap { position: relative; width: 100%; height: 240px; margin-top: 12px; }
+    .legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); justify-content: center; margin-bottom: 4px; }
+    .legend span { display: flex; align-items: center; gap: 5px; }
+    .legend .dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    .cycle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+    @media (max-width: 480px) { .cycle-grid { grid-template-columns: 1fr 1fr; } }
+    .cycle-cell { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+    .cycle-cell.custom-edited { border-color: var(--primary); }
+    .cycle-num-label { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 6px; text-transform: uppercase; }
+    .price-row { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+    .plabel { font-size: 10px; color: var(--muted); width: 24px; flex-shrink: 0; font-weight: 500; }
+    .price-input { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 6px; color: var(--input-text); font-family: 'Montserrat', sans-serif; font-size: 11px; padding: 4px 6px; width: 100%; min-width: 0; outline: none; -moz-appearance: textfield; }
+    .price-input::-webkit-inner-spin-button, .price-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .price-input:focus { border-color: var(--primary); }
+    .price-input.buy { color: var(--gain); }
+    .price-input.sell { color: var(--loss); }
+    [data-theme="dark"] .price-input.buy { color: var(--gain); }
+    .cbadge { font-size: 12px; font-weight: 600; margin-top: 8px; min-height: 16px; }
+    .cbadge.pos { color: #3b82f6; }
+    .cbadge.flat { color: var(--muted); }
+    .cbadge.locked { color: var(--loss); }
+    .gainpct { font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+
+    .warn-box { background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 10px; padding: 10px 20px; font-size: 12px; color: var(--warn); margin-bottom: 16px; display: none; text-align: center; }
+
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th { text-align: right; padding: 8px 6px; color: var(--muted); font-weight: 600; font-size: 11px; border-bottom: 1px solid var(--border); white-space: nowrap; letter-spacing: 0.03em; text-transform: uppercase; }
+    th:first-child { text-align: left; }
+    td { text-align: right; padding: 8px 6px; color: var(--text); border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 12px; }
+    td:first-child { text-align: left; color: var(--muted); font-weight: 600; }
+    td.gain { color: #3b82f6; font-weight: 600; }
+    td.loss { color: var(--loss); }
+    tr:last-child td { border-bottom: none; }
+    tr.total-row td { font-weight: 700; border-top: 2px solid var(--border); color: var(--text); }
+    tr.total-row td:first-child { color: var(--muted); }
+    @media (hover: hover) { tr:hover td { background: var(--bg); } tr.total-row:hover td { background: transparent; } }
+
+    .note { font-size: 12px; color: var(--muted); line-height: 1.8; text-align: center; margin-bottom: 0; padding-top: 4px; }
+    .section-note { font-size: 12px; color: var(--muted); text-align: center; margin: 0 0 16px 0; line-height: 1.5; }
+    .privacy-note { font-size: 11px; color: var(--muted); text-align: center; margin: 0 auto 20px auto; padding: 8px 20px; border: 1px solid var(--divider); border-radius: 10px; line-height: 1.6; display: inline-block; }
+    .privacy-note strong { color: var(--text); }
+    .model-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; align-items: start; }
+    @media (max-width: 520px) { .model-row { grid-template-columns: 1fr; } }
+
+    .share-row { display: flex; gap: 8px; margin-top: 12px; justify-content: center; flex-wrap: wrap; }
+    .share-btn { height: 36px; line-height: 36px; padding: 0 20px; font-size: 12px; width: auto; min-width: 160px; margin: 0; background-image: none; background-color: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 8px; font-family: 'Josefin Sans', sans-serif; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .share-btn:hover { background-color: var(--primary); color: #fff; background-image: none; }
+    .share-btn:active { background-color: var(--primary); color: #fff; background-image: none; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <button class="theme-button" id="themeButton" onclick="toggleTheme()">Dark Mode</button>
+
+  <!-- Header -->
+  <h2>DigiDollar Compounding Calculator</h2>
+  <p class="section-note">
+    Lock $DGB &rarr; Mint $DD &rarr; Buy More $DGB &rarr; Unlock at Higher Price &rarr; Net More $DGB.<br>
+    Every profitable cycle compounds on the last. Customize every variable below.
+  </p>
+
+  <div style="text-align:center; margin-bottom:12px;">
+    <div class="privacy-note">
+      <strong>Runs entirely in your browser.</strong> No data is ever sent to a server &mdash; your wallet values stay private.
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="box" style="margin-top: -4px;">
+    <h3>Settings</h3>
+    <div class="group-label">Position</div>
+    <div class="input-row">
+      <div>
+        <label for="startDGB">Starting DGB</label>
+        <div class="spinner-wrap">
+          <input type="text" id="startDGB" value="1,000,000" inputmode="numeric" autocomplete="off">
+          <div class="spinner-btns">
+            <button type="button" class="spinner-btn" onclick="stepDGB(1)">&#9650;</button>
+            <button type="button" class="spinner-btn" onclick="stepDGB(-1)">&#9660;</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label for="mintRate">Mint Rate / Lock Period</label>
+        <select id="mintRate" onchange="updateMintHint()">
+          <option value="20">20% / 30-Day Lock</option>
+          <option value="25" selected>25% / 3-Month Lock</option>
+          <option value="28.6">28.6% / 6-Month Lock</option>
+          <option value="33.3">33.3% / 1-Year Lock</option>
+          <option value="36.4">36.4% / 2-Year Lock</option>
+          <option value="40">40% / 3-Year Lock</option>
+          <option value="44.4">44.4% / 5-Year Lock</option>
+          <option value="47.2">47.2% / 7-Year Lock</option>
+          <option value="50">50% / 10-Year Lock</option>
+        </select>
+        <div class="hint" id="mintHint">400% Collateralization Ratio</div>
+      </div>
+      <div>
+        <label for="totalCycles">Total Cycles</label>
+        <div class="spinner-wrap">
+          <input type="number" id="totalCycles" value="40" min="1" max="240" step="1">
+          <div class="spinner-btns">
+            <button type="button" class="spinner-btn" onclick="stepCycles(1)">&#9650;</button>
+            <button type="button" class="spinner-btn" onclick="stepCycles(-1)">&#9660;</button>
+          </div>
+        </div>
+        <div class="hint" id="cycleHint">Max 40 Over 10 Years</div>
+      </div>
+      <div>
+        <label for="priceModel">Price Model</label>
+        <select id="priceModel">
+          <option value="linear">Linear</option>
+          <option value="exponential">Exponential</option>
+        </select>
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="group-label">Price Model</div>
+    <div class="model-row">
+      <div>
+        <label for="modelStart">Start Price ($)</label>
+        <div class="spinner-wrap">
+          <input type="text" id="modelStart" value="0.004" inputmode="decimal">
+          <div class="spinner-btns">
+            <button type="button" class="spinner-btn" onclick="stepModel('modelStart',0.0001)">&#9650;</button>
+            <button type="button" class="spinner-btn" onclick="stepModel('modelStart',-0.0001)">&#9660;</button>
+          </div>
+        </div>
+        <div class="hint" id="fdvStart" style="display:flex; align-items:center; gap:4px;"><span id="fdvStartText">FDV: $84.0M</span><span id="fdvLive"></span></div>
+      </div>
+      <div>
+        <label for="modelEnd">End Price ($)</label>
+        <div class="spinner-wrap">
+          <input type="text" id="modelEnd" value="0.35" inputmode="decimal">
+          <div class="spinner-btns">
+            <button type="button" class="spinner-btn" onclick="stepModel('modelEnd',0.0001)">&#9650;</button>
+            <button type="button" class="spinner-btn" onclick="stepModel('modelEnd',-0.0001)">&#9660;</button>
+          </div>
+        </div>
+        <div class="hint" style="display:flex; align-items:center; gap:4px;"><span id="fdvEnd">FDV: $7.35B</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Warning -->
+  <div style="text-align:center;">
+    <div class="warn-box" id="warnBox" style="display:none; margin-left:auto; margin-right:auto;"></div>
+  </div>
+
+  <!-- Summary -->
+  <div class="box">
+    <h3>Summary</h3>
+    <div class="metrics-grid" id="metrics"></div>
+    <div class="share-row">
+      <button class="share-btn" onclick="copyShareLink(this)">Copy Share Link</button>
+      <button class="share-btn" onclick="copyResults(this)">Copy Results</button>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="box" style="padding-left: 12px; padding-right: 12px;">
+    <h3>DGB Accumulation &amp; Portfolio Value</h3>
+    <div class="legend">
+      <span><span class="dot" style="background:#3b82f6"></span>DGB Held</span>
+      <span><span class="dot" style="background:#16a34a"></span>USD Value</span>
+    </div>
+    <div class="chart-wrap"><canvas id="chart"></canvas></div>
+  </div>
+
+  <!-- Per-cycle editor -->
+  <div class="box">
+    <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:6px; flex-wrap:wrap;">
+      <h3 style="margin:0;">Per-Cycle Price Editor</h3>
+      <span id="customIndicator" style="display:none; font-size:11px; font-family:'Josefin Sans',sans-serif; color:var(--primary); border:1px solid var(--input-border); border-radius:20px; padding:3px 14px; letter-spacing:0.04em;"></span>
+    </div>
+    <p class="section-note" style="margin-bottom:12px;">
+      Edit any cycle's <strong style="color:var(--gain)">buy</strong> or <strong style="color:var(--loss)">sell</strong> price directly.
+    </p>
+    <div style="margin-bottom:16px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="resetToModel('linear', this)" style="width:280px; display:inline-block; overflow:visible; text-overflow:clip; font-size:14px; margin:0;">Reset to Linear Model</button>
+      <button onclick="resetToModel('exponential', this)" style="width:280px; display:inline-block; overflow:visible; text-overflow:clip; font-size:14px; margin:0;">Reset to Exponential Model</button>
+    </div>
+    <div class="cycle-grid" id="cycleGrid"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="box" style="padding-bottom: 10px;">
+    <h3>Full Cycle Breakdown</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Cycle</th>
+            <th>DGB Locked</th>
+            <th>DD Minted</th>
+            <th>Buy $</th>
+            <th>DGB Bought</th>
+            <th>Sell $</th>
+            <th>DGB Sold</th>
+            <th>DGB Gain</th>
+            <th>Net DGB</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <p class="note">
+    This calculator simulates outcomes based on user-defined price assumptions. Cryptocurrency markets are unpredictable &mdash; actual results will vary. Not financial advice.
+  </p>
+
+  <p class="note" style="margin-top: 12px; font-size: 11px;">
+    Find this calculator useful? Tips appreciated &mdash;<br>
+    <span style="font-family:'Montserrat',sans-serif; letter-spacing:0.02em; color:var(--text); font-size:11px; word-break:break-all;">dgb1qut6s660nsj2xagjnr4cqmyqrd8f9z5s9pxqc60</span>
+    <a href="javascript:void(0)" class="live-pill" style="margin-left:6px; width:90px; text-align:center; display:inline-block;" onmousedown="event.preventDefault(); navigator.clipboard.writeText('dgb1qut6s660nsj2xagjnr4cqmyqrd8f9z5s9pxqc60').then(() => { const el = event.target; const orig = el.textContent; el.textContent = 'Copied!'; setTimeout(() => el.textContent = orig, 1500); });">Copy Address</a>
+  </p>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const fmt = n => Math.round(n).toLocaleString();
+const fmtD = n => { const abs = Math.abs(n), sign = n < 0 ? '-' : ''; return abs >= 1e12 ? sign + '$' + (abs/1e12).toFixed(2) + 'T' : abs >= 1e9 ? sign + '$' + (abs/1e9).toFixed(2) + 'B' : abs >= 1e6 ? sign + '$' + (abs/1e6).toFixed(2) + 'M' : abs >= 1000 ? sign + '$' + (abs/1000).toFixed(1) + 'K' : sign + '$' + abs.toFixed(2); };
+const fmtP = n => '$' + parseFloat(n).toFixed(4);
+const fmtN = n => { const abs = Math.abs(n), sign = n < 0 ? '-' : ''; return abs >= 1e9 ? sign + (abs/1e9).toFixed(2) + 'B' : abs >= 1e6 ? sign + (abs/1e6).toFixed(2) + 'M' : abs >= 1000 ? sign + (abs/1000).toFixed(1) + 'K' : sign + Math.round(abs).toLocaleString(); };
+const el = id => document.getElementById(id);
+
+const MINT_HINTS = {
+  '20':'500% Collateralization Ratio','25':'400% Collateralization Ratio',
+  '28.6':'350% Collateralization Ratio','33.3':'300% Collateralization Ratio',
+  '36.4':'275% Collateralization Ratio','40':'250% Collateralization Ratio',
+  '44.4':'225% Collateralization Ratio','47.2':'212% Collateralization Ratio',
+  '50':'200% Collateralization Ratio'
+};
+
+const MAX_CYCLES = {
+  '20':   { n: 120, label: 'Max 120 Over 10 Years', def: 120 },
+  '25':   { n: 40,  label: 'Max 40 Over 10 Years',  def: 40  },
+  '28.6': { n: 20,  label: 'Max 20 Over 10 Years',  def: 20  },
+  '33.3': { n: 10,  label: 'Max 10 Over 10 Years',  def: 10  },
+  '36.4': { n: 5,   label: 'Max 5 Over 10 Years',   def: 5   },
+  '40':   { n: 3,   label: 'Max 3 Over 10 Years',   def: 3   },
+  '44.4': { n: 2,   label: 'Max 2 Over 10 Years',   def: 2   },
+  '47.2': { n: 1,   label: 'Max 1 Over 10 Years',   def: 1   },
+  '50':   { n: 1,   label: 'Max 1 Over 10 Years',   def: 1   }
+};
+
+function updateMintHint() {
+  const val = el('mintRate').value;
+  el('mintHint').textContent = MINT_HINTS[val] || '';
+  const mc = MAX_CYCLES[val];
+  if (mc) {
+    el('cycleHint').textContent = mc.label;
+    el('totalCycles').value = mc.def;
+  }
+  isCustom = false;
+  updateIndicator();
+  const g = getG();
+  buildPrices(g.n);
+  buildGrid(g.n);
+  simulate();
+}
+
+let chart, cyclePrices = [], rebuilding = false, isCustom = false;
+let lastRows = [], lastG = {};
+
+function isDark() { return document.documentElement.dataset.theme === 'dark'; }
+
+function getG() {
+  return {
+    startDGB: Math.min(2000000000, Math.max(1, +el('startDGB').value.replace(/,/g, '') || 1000000)),
+    mintRate: Math.min(1, Math.max(0.001, parseFloat(el('mintRate').value || 25) / 100)),
+    n: Math.min(MAX_CYCLES[el('mintRate').value]?.n || 40, Math.max(1, Math.round(+el('totalCycles').value || 12))),
+    pStart: +el('modelStart').value || 0.004,
+    pEnd: +el('modelEnd').value || 0.35,
+    model: el('priceModel').value
+  };
+}
+
+function modelPrice(i, n, s, e, model) {
+  if (n <= 1) return i === 0 ? s : e;
+  const t = i / (n - 1);
+  if (model === 'exponential' && s > 0 && e > 0) return s * Math.pow(e / s, t);
+  return s + (e - s) * t;
+}
+
+function buildPrices(n) {
+  const g = getG(); cyclePrices = [];
+  for (let i = 0; i < n; i++) {
+    const buy = modelPrice(i, n + 1, g.pStart, g.pEnd, g.model);
+    const sell = modelPrice(i + 1, n + 1, g.pStart, g.pEnd, g.model);
+    cyclePrices.push({ buy: +buy.toFixed(4), sell: +sell.toFixed(4), custom: false });
+  }
+}
+
+function resetToModel(model, btn) {
+  el('priceModel').value = model;
+  isCustom = false;
+  updateIndicator();
+  const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  if (btn) { const orig = btn.textContent; btn.textContent = 'Reset!'; setTimeout(() => { btn.textContent = orig; }, 1500); }
+}
+
+function buildGrid(n) {
+  rebuilding = true;
+  const grid = el('cycleGrid'); grid.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const cp = cyclePrices[i] || { buy: 0.001, sell: 0.002, custom: false };
+    const pctVal = cp.buy > 0 ? ((cp.sell - cp.buy) / cp.buy * 100) : 0;
+    const pctColor = pctVal > 0 ? 'var(--gain)' : pctVal < 0 ? 'var(--loss)' : 'var(--muted)';
+    const gainPct = `<span style="color:${pctColor}">${(pctVal >= 0 ? '+' : '') + pctVal.toFixed(1)}%<br>${pctVal > 0 ? 'Value Gained' : pctVal < 0 ? 'Value Lost' : 'Flat'}</span>`;
+    const cell = document.createElement('div');
+    cell.className = 'cycle-cell' + (cp.custom ? ' custom-edited' : '');
+    cell.id = 'cell' + i;
+    cell.innerHTML = `
+      <div class="cycle-num-label">Cycle ${i + 1}</div>
+      <div class="price-row">
+        <span class="plabel">Buy</span>
+        <input class="price-input buy" type="text" inputmode="decimal" value="${cp.buy.toFixed(4)}" data-i="${i}" data-t="buy">
+      </div>
+      <div class="price-row">
+        <span class="plabel">Sell</span>
+        <input class="price-input sell" type="text" inputmode="decimal" value="${cp.sell.toFixed(4)}" data-i="${i}" data-t="sell">
+      </div>
+      <div class="cbadge" id="cb${i}"></div>
+      <div class="gainpct" id="be${i}"></div>
+    `;
+    grid.appendChild(cell);
+    el('be' + i).innerHTML = gainPct;
+  }
+  grid.querySelectorAll('.price-input').forEach(inp => {
+    inp.addEventListener('keydown', e => priceKeydown(e, inp, 0.0001));
+    inp.addEventListener('input', () => {
+      const i = +inp.dataset.i, t = inp.dataset.t;
+      let v = parseFloat(inp.value);
+      if (!isNaN(v) && v > 0) {
+        if (v > PRICE_MAX) { v = PRICE_MAX; inp.value = v.toFixed(4); }
+        cyclePrices[i][t] = +v.toFixed(4);
+        cyclePrices[i].custom = true;
+        el('cell' + i).className = 'cycle-cell custom-edited';
+        const b = cyclePrices[i].buy, s = cyclePrices[i].sell;
+        const pct = b > 0 ? ((s - b) / b * 100) : 0;
+        const col = pct > 0 ? 'var(--gain)' : pct < 0 ? 'var(--loss)' : 'var(--muted)';
+        el('be' + i).innerHTML = `<span style="color:${col}">${(pct >= 0 ? '+' : '') + pct.toFixed(1)}%<br>${pct > 0 ? 'Value Gained' : pct < 0 ? 'Value Lost' : 'Flat'}</span>`;
+        isCustom = true;
+        updateIndicator();
+        simulate();
+      }
+    });
+    inp.addEventListener('blur', () => {
+      const i = +inp.dataset.i, t = inp.dataset.t;
+      const v = parseFloat(inp.value);
+      if (isNaN(v) || v < PRICE_MIN) inp.value = PRICE_MIN.toString();
+      else if (v > PRICE_MAX) inp.value = PRICE_MAX.toString();
+      cyclePrices[i][t] = +parseFloat(inp.value).toFixed(4);
+    });
+    inp.addEventListener('paste', e => {
+      const val = parseFloat((e.clipboardData || window.clipboardData).getData('text'));
+      if (isNaN(val) || val < PRICE_MIN || val > PRICE_MAX) e.preventDefault();
+    });
+  });
+  rebuilding = false;
+}
+
+function simulate() {
+  if (rebuilding) return;
+  const g = getG(); const n = g.n; lastG = g;
+  while (cyclePrices.length < n) cyclePrices.push({ buy: g.pStart, sell: g.pEnd, custom: false });
+  if (cyclePrices.length > n) cyclePrices = cyclePrices.slice(0, n);
+
+  let dgb = g.startDGB;
+  const rows = [], dgbH = [dgb], valH = [dgb * (cyclePrices[0]?.buy || g.pStart)], labels = ['Start'];
+  let profCount = 0;
+
+  for (let i = 0; i < n; i++) {
+    const cp = cyclePrices[i];
+    const bp = cp.buy, sp = cp.sell;
+    const dd = dgb * bp * g.mintRate;
+    const bought = dd / bp;
+    const sold = sp > 0 ? dd / sp : bought;
+    const rawGain = bought - sold;
+    const gain = sp <= bp ? 0 : rawGain;
+    const prev = dgb;
+    dgb = dgb + gain;
+    const profitable = sp > bp;
+    if (profitable) profCount++;
+    rows.push({ c: i+1, locked: prev, dd, bought, bp, sp, sold, net: dgb, gain, profitable });
+    dgbH.push(dgb); valH.push(dgb * Math.max(sp, 0.0001)); labels.push('C' + (i+1));
+
+    const badge = el('cb' + i);
+    if (badge) {
+      if (profitable) { badge.className = 'cbadge pos'; badge.innerHTML = '+' + fmt(Math.round(gain)) + '<br>DGB Gained'; }
+      else if (sp === bp) { badge.className = 'cbadge flat'; badge.textContent = 'Flat'; }
+      else { badge.className = 'cbadge locked'; badge.textContent = 'Not Unlocked'; }
+    }
+  }
+  lastRows = rows;
+
+  const warnBox = el('warnBox');
+  if (profCount === 0) {
+    warnBox.style.display = 'inline-block';
+    warnBox.textContent = '⚠ No profitable cycles — all sell prices are at or below buy prices. Adjust prices so at least one sell exceeds its buy.';
+  } else if (profCount < n / 2) {
+    warnBox.style.display = 'inline-block';
+    warnBox.textContent = `⚠ Only ${profCount} of ${n} cycles are profitable. Consider adjusting sell prices above buy prices for more cycles.`;
+  } else {
+    warnBox.style.display = 'none';
+  }
+
+  const finalVal = dgb * (cyclePrices[n-1]?.sell || g.pEnd);
+  const initVal = g.startDGB * (cyclePrices[0]?.buy || g.pStart);
+
+  el('metrics').innerHTML = `
+    <div class="metric-card"><div class="metric-label">Final<br>DGB</div><div class="metric-value">${fmtN(dgb)}</div><div class="metric-sub">From ${fmtN(g.startDGB)}</div></div>
+    <div class="metric-card gain"><div class="metric-label">DGB<br>Gained</div><div class="metric-value">+${fmtN(dgb - g.startDGB)}</div><div class="metric-sub">${((dgb - g.startDGB) / g.startDGB * 100).toFixed(1)}% Increase</div></div>
+    <div class="metric-card accent"><div class="metric-label">Final<br>Value</div><div class="metric-value">${fmtD(finalVal)}</div><div class="metric-sub">From ${fmtD(initVal)}</div></div>
+    <div class="metric-card accent"><div class="metric-label">Value<br>Multiplier</div><div class="metric-value">${(finalVal / Math.max(initVal, 0.01)).toFixed(1)}x</div><div class="metric-sub">Over ${n} Cycles</div></div>
+    <div class="metric-card"><div class="metric-label">Profitable<br>Cycles</div><div class="metric-value">${profCount} / ${n}</div><div class="metric-sub">${n - profCount > 0 ? (n - profCount) + ' Not Unlocked' : 'All Unlocked'}</div></div>
+  `;
+
+  const dark = isDark();
+  const gridColor = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const tickColor = dark ? '#9ca3af' : '#6b7280';
+
+  // FIX: Only rebuild the chart when theme changes or it doesn't exist yet.
+  // For data-only updates, use chart.update() (with animation) instead of
+  // chart.update('none') which suppressed all animations.
+  if (chart && !chart._themeChanged) {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = dgbH;
+    chart.data.datasets[1].data = valH;
+    chart.update(); // animate data transitions
+  } else {
+    if (chart) chart.destroy();
+    chart = new Chart(el('chart'), {
+      type: 'line',
+      data: { labels, datasets: [
+        { label: 'DGB', data: dgbH, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.07)', yAxisID: 'y', tension: 0.35, pointRadius: 3, pointBackgroundColor: '#3b82f6', borderWidth: 2 },
+        { label: 'USD', data: valH, borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.07)', yAxisID: 'y2', tension: 0.35, pointRadius: 3, pointBackgroundColor: '#16a34a', borderWidth: 2 }
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: false, layout: { padding: { left: 0, right: 0 } },
+        plugins: { legend: { display: false }, tooltip: {
+          backgroundColor: dark ? '#1e2630' : '#ffffff', borderColor: dark ? '#2f3a46' : '#d0d7e2', borderWidth: 1,
+          titleColor: tickColor, bodyColor: dark ? '#e5e7eb' : '#1f2937',
+          titleFont: { family: 'Montserrat', size: 11 }, bodyFont: { family: 'Montserrat', size: 12 },
+          callbacks: { label: ctx => ctx.datasetIndex === 0 ? ' DGB: ' + fmtN(ctx.raw) : ' Value: ' + fmtD(ctx.raw) }
+        }},
+        scales: {
+          x: { ticks: { color: tickColor, font: { family: 'Montserrat', size: 10 }, autoSkip: true, maxTicksLimit: 12 }, grid: { color: gridColor }, border: { color: 'transparent' } },
+          y: { position: 'left', afterFit: a => { a.width = 80; }, ticks: { color: '#3b82f6', font: { family: 'Montserrat', size: 10 }, callback: v => fmtN(v), maxTicksLimit: 6 }, grid: { color: gridColor }, border: { color: 'transparent' } },
+          y2: { position: 'right', afterFit: a => { a.width = 80; }, ticks: { color: '#16a34a', font: { family: 'Montserrat', size: 10 }, callback: v => fmtD(v), maxTicksLimit: 6 }, grid: { drawOnChartArea: false }, border: { color: 'transparent' } }
+        }
+      }
+    });
+    chart._themeChanged = false; // reset flag after rebuild
+  }
+
+  el('tbody').innerHTML = rows.map(r => `<tr>
+    <td>${r.c}</td><td>${fmt(r.locked)}</td><td>${fmtD(r.dd)}</td><td>${fmtP(r.bp)}</td><td>${fmt(r.bought)}</td>
+    <td>${fmtP(r.sp)}</td><td>${fmt(r.sold)}</td>
+    <td class="${r.profitable ? 'gain' : ''}">${r.profitable ? '+' + fmt(r.gain) : '—'}</td><td>${fmt(r.net)}</td>
+  </tr>`).join('') +
+  `<tr class="total-row"><td colspan="7">Total after ${n} cycles</td><td>+${fmt(dgb - g.startDGB)}</td><td>${fmt(dgb)}</td></tr>`;
+}
+
+function matchesModel(model) {
+  const g = getG(); const n = cyclePrices.length;
+  for (let i = 0; i < n; i++) {
+    const expBuy = +modelPrice(i, n + 1, g.pStart, g.pEnd, model).toFixed(4);
+    const expSell = +modelPrice(i + 1, n + 1, g.pStart, g.pEnd, model).toFixed(4);
+    if (Math.abs(cyclePrices[i].buy - expBuy) > 0.0001 || Math.abs(cyclePrices[i].sell - expSell) > 0.0001) return false;
+  }
+  return true;
+}
+
+function updateIndicator() {
+  const ind = el('customIndicator');
+  if (!isCustom) { ind.style.display = 'none'; return; }
+  if (matchesModel('linear')) { ind.style.display = 'inline'; ind.textContent = 'Linear Model'; }
+  else if (matchesModel('exponential')) { ind.style.display = 'inline'; ind.textContent = 'Exponential Model'; }
+  else { ind.style.display = 'inline'; ind.textContent = 'Custom Prices'; }
+}
+
+function copyShareLink(btn) {
+  const g = getG();
+  const params = new URLSearchParams({
+    s: g.startDGB, m: el('mintRate').value, n: g.n,
+    ps: g.pStart, pe: g.pEnd, pm: g.model,
+    custom: isCustom ? '1' : '0',
+    cp: cyclePrices.map(c => c.buy + ',' + c.sell).join(';')
+  });
+  const url = location.href.split('?')[0] + '?' + params.toString();
+  navigator.clipboard.writeText(url).then(() => flashBtn(btn, 'Copied!', 'Copy Share Link'));
+}
+
+function copyResults(btn) {
+  const g = lastG; const rows = lastRows;
+  if (!rows.length) return;
+  const finalDGB = rows[rows.length-1].net;
+  const finalVal = finalDGB * (cyclePrices[rows.length-1]?.sell || g.pEnd);
+  const initVal = g.startDGB * (cyclePrices[0]?.buy || g.pStart);
+  const profCount = rows.filter(r => r.profitable).length;
+  const lockLabel = el('mintRate').options[el('mintRate').selectedIndex].text;
+  const modelLabel = el('priceModel').value.charAt(0).toUpperCase() + el('priceModel').value.slice(1);
+  let txt = `DigiDollar Compounding Calculator Results\n`;
+  txt += `==========================================\n`;
+  txt += `Starting DGB: ${fmt(g.startDGB)}\n`;
+  txt += `Lock Period: ${lockLabel}\n`;
+  txt += `Price Model: ${isCustom ? 'Custom' : modelLabel}\n`;
+  txt += `Price Range: $${g.pStart} → $${g.pEnd}\n`;
+  txt += `Total Cycles: ${g.n} (${profCount} profitable)\n\n`;
+  rows.forEach(r => {
+    txt += `Cycle ${r.c}: Buy $${fmtP(r.bp).slice(1)} → Sell $${fmtP(r.sp).slice(1)} | ${r.profitable ? '+' + fmt(r.gain) + ' DGB Gained' : 'Not Unlocked'}\n`;
+  });
+  txt += `\nStarting DGB: ${fmt(g.startDGB)}\n`;
+  txt += `Final DGB: ${fmt(finalDGB)}\n`;
+  txt += `DGB Gained: +${fmt(finalDGB - g.startDGB)}\n`;
+  txt += `\nEntry Value: ${fmtD(initVal)}\n`;
+  txt += `Final Value: ${fmtD(finalVal)}\n`;
+  txt += `Value Multiplier: ${(finalVal / Math.max(initVal, 0.01)).toFixed(1)}x\n`;
+  txt += `\nRuns entirely in your browser — luce.finance`;
+  navigator.clipboard.writeText(txt).then(() => flashBtn(btn, 'Copied!', 'Copy Results'));
+}
+
+function flashBtn(btn, msg, original) {
+  btn.textContent = msg;
+  setTimeout(() => { btn.textContent = original; }, 2000);
+}
+
+function loadFromParams() {
+  const p = new URLSearchParams(location.search);
+  if (!p.has('s')) return;
+  el('startDGB').value = (+p.get('s')).toLocaleString();
+  el('mintRate').value = p.get('m');
+  el('totalCycles').value = p.get('n');
+  el('modelStart').value = p.get('ps');
+  el('modelEnd').value = p.get('pe');
+  el('priceModel').value = p.get('pm');
+  updateMintHint();
+  if (p.has('cp')) {
+    const pairs = p.get('cp').split(';');
+    cyclePrices = pairs.map(pair => {
+      const [buy, sell] = pair.split(',').map(Number);
+      return { buy: +buy.toFixed(4), sell: +sell.toFixed(4), custom: false };
+    });
+    isCustom = p.get('custom') === '1';
+    if (isCustom) {
+      if (matchesModel('linear') || matchesModel('exponential')) isCustom = false;
+    }
+    updateIndicator();
+    buildGrid(cyclePrices.length);
+  } else {
+    buildPrices(+p.get('n')); buildGrid(+p.get('n'));
+  }
+  simulate();
+}
+
+function toggleTheme() {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = dark ? '' : 'dark';
+  localStorage.setItem('theme', dark ? '' : 'dark');
+  el('themeButton').innerText = dark ? 'Dark Mode' : 'Light Mode';
+  if (chart) chart._themeChanged = true; // flag chart for full rebuild on next simulate()
+  simulate();
+}
+
+(function() {
+  document.documentElement.dataset.theme = localStorage.getItem('theme') === 'dark' ? 'dark' : '';
+  el('themeButton').innerText = document.documentElement.dataset.theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+})();
+
+function stepCycles(dir) {
+  const v = Math.round(+el('totalCycles').value || 1);
+  const next = Math.min(240, Math.max(1, v + dir));
+  el('totalCycles').value = next;
+  const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+}
+
+function stepDGB(dir) {
+  const rawStr = el('startDGB').value.replace(/,/g, '');
+  const raw = rawStr === '' ? 1 : +rawStr;
+  const next = Math.min(2000000000, Math.max(1, raw + dir));
+  el('startDGB').value = next.toLocaleString();
+  simulate();
+}
+
+const MAX_SUPPLY = 21000000000;
+function updateFDV() {
+  const s = parseFloat(el('modelStart').value) || 0;
+  const e = parseFloat(el('modelEnd').value) || 0;
+  el('fdvStartText').textContent = 'FDV: ' + fmtD(s * MAX_SUPPLY);
+  const liveEl = el('fdvLive');
+  if (window._livePrice) {
+    if (!window._liveFlashing) {
+      liveEl.innerHTML = `<a href="javascript:void(0)" class="live-pill" style="display:inline-block; text-align:center; min-width:90px;" onmousedown="event.preventDefault(); applyLivePrice(${window._livePrice}, event.target);">Live: $${window._livePrice}</a>`;
+    }
+  } else if (window._liveStatus) {
+    const isFetching = window._liveStatus.includes('Fetching');
+    liveEl.innerHTML = `<span style="color:${isFetching ? 'var(--warn)' : 'var(--loss)'};">${window._liveStatus}</span>`;
+  } else {
+    liveEl.innerHTML = '';
+  }
+  el('fdvEnd').textContent = 'FDV: ' + fmtD(e * MAX_SUPPLY);
+}
+
+function stepModel(id, step) {
+  const v = el(id).value === '' ? PRICE_MIN : parseFloat(el(id).value);
+  const next = Math.min(PRICE_MAX, Math.max(PRICE_MIN, +(v + step).toFixed(4)));
+  el(id).value = next;
+  updateFDV();
+  isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+}
+
+el('startDGB').addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    const rawStr = el('startDGB').value.replace(/,/g, '');
+    const raw = rawStr === '' ? 1 : +rawStr;
+    const next = Math.min(2000000000, Math.max(1, raw + (e.key === 'ArrowUp' ? 1 : -1)));
+    el('startDGB').value = next.toLocaleString();
+    simulate();
+  }
+});
+
+el('startDGB').addEventListener('input', () => {
+  const inp = el('startDGB');
+  const pos = inp.selectionStart;
+  const raw = inp.value.replace(/[^0-9]/g, '');
+  if (!raw) { inp.value = ''; return; }
+  const num = Math.min(2000000000, +raw);
+  const formatted = num.toLocaleString();
+  const oldLen = inp.value.length;
+  inp.value = formatted;
+  const newLen = inp.value.length;
+  inp.setSelectionRange(pos + (newLen - oldLen), pos + (newLen - oldLen));
+  simulate();
+});
+el('startDGB').addEventListener('blur', () => {
+  const raw = el('startDGB').value.replace(/[^0-9]/g, '');
+  const num = raw ? Math.min(2000000000, Math.max(1, +raw)) : 1;
+  el('startDGB').value = num.toLocaleString();
+  simulate();
+});
+el('startDGB').addEventListener('paste', e => {
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData('text');
+  const raw = text.replace(/[^0-9]/g, '');
+  if (!raw) return;
+  const num = Math.min(2000000000, Math.max(1, +raw));
+  el('startDGB').value = num.toLocaleString();
+  simulate();
+});
+el('mintRate').addEventListener('change', updateMintHint);
+el('totalCycles').addEventListener('input', () => {
+  let v = Math.round(+el('totalCycles').value);
+  if (v > 240) { v = 240; el('totalCycles').value = 240; }
+  if (v < 1) { v = 1; el('totalCycles').value = 1; }
+  const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+});
+el('totalCycles').addEventListener('paste', e => {
+  const val = Math.round(parseFloat((e.clipboardData || window.clipboardData).getData('text')));
+  if (isNaN(val) || val < 1 || val > 240) e.preventDefault();
+});
+
+el('priceModel').addEventListener('change', () => { isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate(); });
+
+const PRICE_MAX = 999.9999;
+const PRICE_MIN = 0.0001;
+
+function priceKeydown(e, inp, step) {
+  if (e.key === 'ArrowUp') { e.preventDefault(); const v = inp.value === '' ? PRICE_MIN : parseFloat(inp.value); inp.value = Math.min(PRICE_MAX, Math.max(PRICE_MIN, +(v+step).toFixed(4))); inp.dispatchEvent(new Event('input')); return; }
+  if (e.key === 'ArrowDown') { e.preventDefault(); const v = inp.value === '' ? PRICE_MIN : parseFloat(inp.value); inp.value = Math.min(PRICE_MAX, Math.max(PRICE_MIN, +(v-step).toFixed(4))); inp.dispatchEvent(new Event('input')); return; }
+  const allowed = ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'];
+  if (allowed.includes(e.key) || e.ctrlKey || e.metaKey) return;
+  if (e.key === '.') { if (inp.value.includes('.')) e.preventDefault(); return; }
+  if (!/^\d$/.test(e.key)) { e.preventDefault(); return; }
+  const val = inp.value, sel = inp.selectionStart, selEnd = inp.selectionEnd;
+  if (e.key === '0' && val === '0' && sel === 1 && !val.includes('.')) { e.preventDefault(); return; }
+  if (e.key !== '0' && val === '0' && sel === 1 && !val.includes('.')) {
+    e.preventDefault(); inp.value = e.key; inp.setSelectionRange(1,1); inp.dispatchEvent(new Event('input')); return;
+  }
+  const proposed = val.slice(0, sel) + e.key + val.slice(selEnd);
+  const dot = proposed.indexOf('.');
+  if (dot !== -1 && proposed.length - dot - 1 > 4) { e.preventDefault(); return; }
+  if (dot !== -1 && proposed === '0.' + '0'.repeat(proposed.length - dot - 1) && e.key === '0') {
+    if (proposed.length - dot - 1 === 4) {
+      e.preventDefault();
+      inp.value = '0.0001';
+      inp.setSelectionRange(inp.value.length, inp.value.length);
+      inp.dispatchEvent(new Event('input'));
+      return;
+    }
+  }
+  if (parseFloat(proposed) > PRICE_MAX) {
+    e.preventDefault();
+    inp.value = PRICE_MAX.toString();
+    inp.setSelectionRange(inp.value.length, inp.value.length);
+    inp.dispatchEvent(new Event('input'));
+    return;
+  }
+}
+
+['modelStart', 'modelEnd'].forEach(id => {
+  const step = 0.0001;
+  el(id).addEventListener('keydown', e => priceKeydown(e, el(id), step));
+  el(id).addEventListener('input', () => {
+    const v = parseFloat(el(id).value);
+    if (!isNaN(v) && v > PRICE_MAX) el(id).value = PRICE_MAX.toString();
+    const dot = el(id).value.indexOf('.');
+    if (dot !== -1 && el(id).value.length - dot - 1 > 4) el(id).value = parseFloat(el(id).value).toFixed(4);
+    updateFDV();
+    isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  });
+  el(id).addEventListener('blur', () => {
+    const v = parseFloat(el(id).value);
+    if (isNaN(v) || v < PRICE_MIN) el(id).value = '0.0001';
+    else if (v > PRICE_MAX) el(id).value = PRICE_MAX.toString();
+    updateFDV();
+    isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  });
+  el(id).addEventListener('paste', e => {
+    e.preventDefault();
+    const val = parseFloat((e.clipboardData || window.clipboardData).getData('text'));
+    if (isNaN(val) || val < PRICE_MIN || val > PRICE_MAX) return;
+    el(id).value = +val.toFixed(4);
+    updateFDV();
+    isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  });
+});
+
+if (location.search) { loadFromParams(); } else {
+  const start = parseFloat(el('modelStart').value) || 0.004;
+  el('modelEnd').value = Math.min(PRICE_MAX, +(start * 10).toFixed(4));
+  buildPrices(getG().n); buildGrid(getG().n); simulate();
+}
+
+window._liveStatus = 'Fetching Live Price...';
+updateFDV();
+
+(function fetchLivePrice() {
+  fetch('https://api.coingecko.com/api/v3/simple/price?ids=digibyte&vs_currencies=usd')
+    .then(r => r.json())
+    .then(data => {
+      const price = data?.digibyte?.usd;
+      if (!price) { window._liveStatus = 'Live Price Unavailable'; updateFDV(); return; }
+      window._livePrice = +price.toFixed(4);
+      window._liveStatus = null;
+      if (!location.search) {
+        el('modelStart').value = window._livePrice;
+        el('modelEnd').value = Math.min(PRICE_MAX, +(window._livePrice * 10).toFixed(4));
+        isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+      }
+      updateFDV();
+    })
+    .catch(() => { window._liveStatus = 'Live Price Unavailable'; updateFDV(); });
+})();
+
+function applyLivePrice(price, btn) {
+  if (btn) {
+    const orig = btn.textContent;
+    window._liveFlashing = true;
+    btn.textContent = 'Applied!';
+    setTimeout(() => { window._liveFlashing = false; if (btn.isConnected) btn.textContent = orig; }, 1500);
+  }
+  el('modelStart').value = price;
+  updateFDV();
+  isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+}
+</script>
+</body>
+</html>
