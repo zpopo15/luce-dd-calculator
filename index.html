@@ -260,7 +260,7 @@
     <h3>Summary</h3>
     <div class="metrics-grid" id="metrics"></div>
     <div class="share-row">
-      <button class="share-btn" onclick="copyShareLink(this)">Copy Share Link</button>
+      <button class="share-btn" onclick="copyShareLink(this)">Share</button>
       <button class="share-btn" onclick="copyResults(this)">Copy Results</button>
     </div>
   </div>
@@ -600,7 +600,7 @@ function copyShareLink(btn) {
     cp: cyclePrices.map(c => c.buy + ',' + c.sell).join(';')
   });
   const url = location.href.split('?')[0] + '?' + params.toString();
-  navigator.clipboard.writeText(url).then(() => flashBtn(btn, 'Copied!', 'Copy Share Link'));
+  navigator.clipboard.writeText(url).then(() => flashBtn(btn, 'Copied!', 'Share'));
 }
 
 function copyResults(btn) {
@@ -643,11 +643,11 @@ function loadFromParams() {
   if (!p.has('s')) return;
   el('startDGB').value = (+p.get('s')).toLocaleString();
   el('mintRate').value = p.get('m');
-  el('totalCycles').value = p.get('n');
   el('modelStart').value = p.get('ps');
   el('modelEnd').value = p.get('pe');
   el('priceModel').value = p.get('pm');
   updateMintHint();
+  el('totalCycles').value = p.get('n'); // set after updateMintHint so it isn't overwritten
   if (p.has('cp')) {
     const pairs = p.get('cp').split(';');
     cyclePrices = pairs.map(pair => {
@@ -888,8 +888,9 @@ function applyLivePrice(price, btn) {
 
 // Hold-to-repeat for spinner buttons
 function makeHoldRepeat(fn) {
-  var timeout, interval, accelTimeout, didRepeat;
+  var timeout, interval, accelTimeout, didRepeat, isDown;
   function start() {
+    isDown = true;
     didRepeat = false;
     timeout = setTimeout(function() {
       didRepeat = true;
@@ -903,11 +904,16 @@ function makeHoldRepeat(fn) {
   }
   function stop() {
     clearTimeout(timeout); clearInterval(interval); clearTimeout(accelTimeout);
-    // If hold never fired, treat as a single click
-    if (!didRepeat) fn();
+    if (isDown && !didRepeat) fn();
+    isDown = false;
     didRepeat = false;
   }
-  return { start: start, stop: stop };
+  function cancel() {
+    clearTimeout(timeout); clearInterval(interval); clearTimeout(accelTimeout);
+    isDown = false;
+    didRepeat = false;
+  }
+  return { start: start, stop: stop, cancel: cancel };
 }
 
 (function attachHoldRepeat() {
@@ -925,9 +931,10 @@ function makeHoldRepeat(fn) {
   function attach(btn, handler) {
     btn.addEventListener("mousedown", handler.start);
     btn.addEventListener("mouseup", handler.stop);
-    btn.addEventListener("mouseleave", handler.stop);
+    btn.addEventListener("mouseleave", handler.cancel);
     btn.addEventListener("touchstart", function(e) { e.preventDefault(); handler.start(); }, { passive: false });
     btn.addEventListener("touchend", handler.stop);
+    btn.addEventListener("touchcancel", handler.cancel);
   }
 
   document.querySelectorAll(".spinner-btn").forEach(function(btn) {
