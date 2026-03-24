@@ -183,8 +183,8 @@
         <div class="spinner-wrap">
           <input type="text" id="startDGB" value="1,000,000" inputmode="numeric" autocomplete="off">
           <div class="spinner-btns">
-            <button type="button" class="spinner-btn" onclick="stepDGB(1)">&#9650;</button>
-            <button type="button" class="spinner-btn" onclick="stepDGB(-1)">&#9660;</button>
+            <button type="button" class="spinner-btn" data-action="dgbUp">&#9650;</button>
+            <button type="button" class="spinner-btn" data-action="dgbDown">&#9660;</button>
           </div>
         </div>
       </div>
@@ -208,8 +208,8 @@
         <div class="spinner-wrap">
           <input type="number" id="totalCycles" value="40" min="1" max="240" step="1">
           <div class="spinner-btns">
-            <button type="button" class="spinner-btn" onclick="stepCycles(1)">&#9650;</button>
-            <button type="button" class="spinner-btn" onclick="stepCycles(-1)">&#9660;</button>
+            <button type="button" class="spinner-btn" data-action="cycleUp">&#9650;</button>
+            <button type="button" class="spinner-btn" data-action="cycleDown">&#9660;</button>
           </div>
         </div>
         <div class="hint" id="cycleHint">Max 40 Over 10 Years</div>
@@ -230,8 +230,8 @@
         <div class="spinner-wrap">
           <input type="text" id="modelStart" value="0.004" inputmode="decimal">
           <div class="spinner-btns">
-            <button type="button" class="spinner-btn" onclick="stepModel('modelStart',0.0001)">&#9650;</button>
-            <button type="button" class="spinner-btn" onclick="stepModel('modelStart',-0.0001)">&#9660;</button>
+            <button type="button" class="spinner-btn" data-action="msUp">&#9650;</button>
+            <button type="button" class="spinner-btn" data-action="msDown">&#9660;</button>
           </div>
         </div>
         <div class="hint" id="fdvStart" style="display:flex; align-items:center; gap:4px;"><span id="fdvStartText">FDV: $84.0M</span><span id="fdvLive"></span></div>
@@ -241,8 +241,8 @@
         <div class="spinner-wrap">
           <input type="text" id="modelEnd" value="0.35" inputmode="decimal">
           <div class="spinner-btns">
-            <button type="button" class="spinner-btn" onclick="stepModel('modelEnd',0.0001)">&#9650;</button>
-            <button type="button" class="spinner-btn" onclick="stepModel('modelEnd',-0.0001)">&#9660;</button>
+            <button type="button" class="spinner-btn" data-action="meUp">&#9650;</button>
+            <button type="button" class="spinner-btn" data-action="meDown">&#9660;</button>
           </div>
         </div>
         <div class="hint" style="display:flex; align-items:center; gap:4px;"><span id="fdvEnd">FDV: $7.35B</span></div>
@@ -763,9 +763,16 @@ el('startDGB').addEventListener('paste', e => {
 });
 el('mintRate').addEventListener('change', updateMintHint);
 el('totalCycles').addEventListener('input', () => {
-  let v = Math.round(+el('totalCycles').value);
+  const raw = el('totalCycles').value;
+  if (raw === '' || raw === '-') return; // allow empty while typing
+  let v = Math.round(+raw);
   if (v > 240) { v = 240; el('totalCycles').value = 240; }
   if (v < 1) { v = 1; el('totalCycles').value = 1; }
+  const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+});
+el('totalCycles').addEventListener('blur', () => {
+  const raw = el('totalCycles').value;
+  if (raw === '' || isNaN(+raw) || Math.round(+raw) < 1) el('totalCycles').value = 1;
   const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
 });
 el('totalCycles').addEventListener('paste', e => {
@@ -881,10 +888,12 @@ function applyLivePrice(price, btn) {
 
 // Hold-to-repeat for spinner buttons
 function makeHoldRepeat(fn) {
-  var timeout, interval, accelTimeout;
+  var timeout, interval, accelTimeout, didRepeat;
   function start() {
-    fn();
+    didRepeat = false;
     timeout = setTimeout(function() {
+      didRepeat = true;
+      fn();
       interval = setInterval(fn, 100);
       accelTimeout = setTimeout(function() {
         clearInterval(interval);
@@ -894,20 +903,23 @@ function makeHoldRepeat(fn) {
   }
   function stop() {
     clearTimeout(timeout); clearInterval(interval); clearTimeout(accelTimeout);
+    // If hold never fired, treat as a single click
+    if (!didRepeat) fn();
+    didRepeat = false;
   }
   return { start: start, stop: stop };
 }
 
 (function attachHoldRepeat() {
   var handlers = {
-    "stepCycles(1)":            makeHoldRepeat(function() { stepCycles(1); }),
-    "stepCycles(-1)":           makeHoldRepeat(function() { stepCycles(-1); }),
-    "stepDGB(1)":               makeHoldRepeat(function() { stepDGB(1); }),
-    "stepDGB(-1)":              makeHoldRepeat(function() { stepDGB(-1); }),
-    "stepModel('modelStart',0.0001)":  makeHoldRepeat(function() { stepModel("modelStart", 0.0001); }),
-    "stepModel('modelStart',-0.0001)": makeHoldRepeat(function() { stepModel("modelStart", -0.0001); }),
-    "stepModel('modelEnd',0.0001)":    makeHoldRepeat(function() { stepModel("modelEnd", 0.0001); }),
-    "stepModel('modelEnd',-0.0001)":   makeHoldRepeat(function() { stepModel("modelEnd", -0.0001); })
+    "cycleUp":   makeHoldRepeat(function() { stepCycles(1); }),
+    "cycleDown": makeHoldRepeat(function() { stepCycles(-1); }),
+    "dgbUp":     makeHoldRepeat(function() { stepDGB(1); }),
+    "dgbDown":   makeHoldRepeat(function() { stepDGB(-1); }),
+    "msUp":      makeHoldRepeat(function() { stepModel("modelStart", 0.0001); }),
+    "msDown":    makeHoldRepeat(function() { stepModel("modelStart", -0.0001); }),
+    "meUp":      makeHoldRepeat(function() { stepModel("modelEnd", 0.0001); }),
+    "meDown":    makeHoldRepeat(function() { stepModel("modelEnd", -0.0001); })
   };
 
   function attach(btn, handler) {
@@ -919,10 +931,8 @@ function makeHoldRepeat(fn) {
   }
 
   document.querySelectorAll(".spinner-btn").forEach(function(btn) {
-    var oc = btn.getAttribute("onclick") || "";
-    Object.keys(handlers).forEach(function(key) {
-      if (oc.indexOf(key) > -1) attach(btn, handlers[key]);
-    });
+    var action = btn.getAttribute("data-action");
+    if (handlers[action]) attach(btn, handlers[action]);
   });
 })();
 </script>
