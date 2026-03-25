@@ -58,6 +58,8 @@
     .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 520px) { .input-row { grid-template-columns: 1fr; } }
     .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .slippage-wrap { width: calc(50% - 4px); margin: 0 auto; }
+    @media (max-width: 520px) { .slippage-wrap { width: 100%; } }
     .group-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
     a.live-pill { font-size: 10px; color: var(--primary); background: transparent; border: 1px solid var(--primary); border-radius: 4px; padding: 2px 7px; text-decoration: none; vertical-align: middle; white-space: nowrap; font-weight: 600; transition: background 0.15s, color 0.15s; }
     a.live-pill:hover { background: var(--primary); color: #fff; }
@@ -243,8 +245,8 @@
         <div class="hint" style="display:flex; align-items:center; gap:4px;"><span id="fdvEnd">FDV: $7.35B</span></div>
       </div>
     </div>
-    <div style="margin-top:12px; display:flex; justify-content:center;">
-      <div style="width:calc(50% - 4px);">
+    <div style="margin-top:12px;">
+      <div class="slippage-wrap">
       <label for="slippageInput">Slippage (%)</label>
       <div class="spinner-wrap">
         <input type="text" id="slippageInput" value="0.5" inputmode="decimal">
@@ -253,12 +255,12 @@
           <button type="button" class="spinner-btn" data-action="slipDown">&#9660;</button>
         </div>
       </div>
-      <div class="hint" style="display:flex; align-items:center; gap:6px;">
+      <div class="hint" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
         Applied to Both Buy and Sell Trades
         <input type="checkbox" id="slippageToggle" onchange="toggleSlippage()" checked style="display:none;">
         <a href="javascript:void(0)" id="slippageBtn" class="live-pill" onclick="document.getElementById('slippageToggle').click()" style="display:inline-block; text-align:center; width:60px;">Enabled</a>
       </div>
-      </div>
+    </div>
     </div>
   </div>
 
