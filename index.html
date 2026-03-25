@@ -444,7 +444,7 @@ function buildGrid(n) {
     const pctVal = cp.buy > 0 ? ((cp.sell - cp.buy) / cp.buy * 100) : 0;
     const pctColor = pctVal > 0 ? 'var(--gain)' : pctVal < 0 ? 'var(--loss)' : 'var(--muted)';
     const gainPct = `<span style="color:${pctColor}">${(pctVal >= 0 ? '+' : '') + pctVal.toFixed(1)}%<br>${pctVal > 0 ? 'Value Gained' : pctVal < 0 ? 'Value Lost' : 'Value Gained'}</span>`;
-    // Note: gainpct is overwritten by simulate() with actual portfolio value change`
+
     const cell = document.createElement('div');
     cell.className = 'cycle-cell' + (cp.custom ? ' custom-edited' : '');
     cell.id = 'cell' + i;
@@ -522,12 +522,10 @@ function simulate() {
     rows.push({ c: i+1, locked: prev, dd, bought, bp, sp, sold, net: dgb, gain, profitable, buyRaw, sellRaw });
     dgbH.push(dgb); valH.push(dgb * Math.max(sp, 0.0001)); labels.push('C' + (i+1));
 
-    const entryVal = prev * bp;
-    const exitVal = dgb * sp;
-    const valPct = entryVal > 0 ? ((exitVal - entryVal) / entryVal * 100) : 0;
-    const valPctColor = valPct > 0 ? 'var(--gain)' : valPct < 0 ? 'var(--loss)' : 'var(--muted)';
+    const pricePct = cp.buy > 0 ? ((cp.sell - cp.buy) / cp.buy * 100) : 0;
+    const pricePctColor = pricePct > 0 ? 'var(--gain)' : pricePct < 0 ? 'var(--loss)' : 'var(--muted)';
     const beEl = el('be' + i);
-    if (beEl) beEl.innerHTML = `<span style="color:${valPctColor}">${(valPct >= 0 ? '+' : '') + valPct.toFixed(1)}%<br>${valPct > 0 ? 'Value Gained' : valPct < 0 ? 'Value Lost' : 'Value Gained'}</span>`;
+    if (beEl) beEl.innerHTML = `<span style="color:${pricePctColor}">${(pricePct >= 0 ? '+' : '') + pricePct.toFixed(1)}%<br>${pricePct > 0 ? 'Value Gained' : pricePct < 0 ? 'Value Lost' : 'Value Gained'}</span>`;
 
     const badge = el('cb' + i);
     if (badge) {
