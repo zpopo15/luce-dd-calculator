@@ -140,10 +140,10 @@
     .model-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; align-items: start; }
     @media (max-width: 520px) { .model-row { grid-template-columns: 1fr; } }
 
-    .share-row { display: flex; gap: 8px; margin-top: 12px; justify-content: center; flex-wrap: wrap; }
-    .share-btn { height: 36px; line-height: 36px; padding: 0 20px; font-size: 12px; width: auto; min-width: 160px; margin: 0; background-image: none; background-color: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 8px; font-family: 'Josefin Sans', sans-serif; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; transition: background 0.15s, color 0.15s; }
-    .share-btn:hover { background-color: var(--primary); color: #fff; background-image: none; }
-    .share-btn:active { background-color: var(--primary); color: #fff; background-image: none; }
+    .action-row { display: flex; gap: 8px; margin-top: 12px; justify-content: center; flex-wrap: wrap; }
+    .action-btn { height: 36px; line-height: 36px; padding: 0 20px; font-size: 12px; width: auto; min-width: 160px; margin: 0; background-image: none; background-color: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 8px; font-family: 'Josefin Sans', sans-serif; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .action-btn:hover { background-color: var(--primary); color: #fff; background-image: none; }
+    .action-btn:active { background-color: var(--primary); color: #fff; background-image: none; }
   </style>
 </head>
 <body>
@@ -254,9 +254,9 @@
   <div class="box">
     <h3>Summary</h3>
     <div class="metrics-grid" id="metrics"></div>
-    <div class="share-row">
-      <button class="share-btn" onclick="copyShareLink(this)">Share</button>
-      <button class="share-btn" onclick="copyResults(this)">Copy Results</button>
+    <div class="action-row">
+      <button class="action-btn" onclick="copyShareLink(this)">Link</button>
+      <button class="action-btn" onclick="copyResults(this)">Export</button>
     </div>
   </div>
 
@@ -274,14 +274,13 @@
   <div class="box">
     <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:6px; flex-wrap:wrap;">
       <h3 style="margin:0;">Per-Cycle Price Editor</h3>
-      <span id="customIndicator" style="display:none; font-size:11px; font-family:'Josefin Sans',sans-serif; color:var(--primary); border:1px solid var(--input-border); border-radius:20px; padding:3px 14px; letter-spacing:0.04em;"></span>
     </div>
     <p class="section-note" style="margin-bottom:12px;">
       Edit any cycle's <strong style="color:var(--gain)">buy</strong> or <strong style="color:var(--loss)">sell</strong> price directly.
     </p>
     <div style="margin-bottom:16px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-      <button onclick="resetToModel('linear', this)" class="share-btn" style="width:220px; min-width:unset;">Reset to Linear Model</button>
-      <button onclick="resetToModel('exponential', this)" class="share-btn" style="width:220px; min-width:unset;">Reset to Exponential Model</button>
+      <button onclick="resetToModel('linear', this)" class="action-btn" style="width:220px; min-width:unset;">Reset to Linear Model</button>
+      <button onclick="resetToModel('exponential', this)" class="action-btn" style="width:220px; min-width:unset;">Reset to Exponential Model</button>
     </div>
     <div class="cycle-grid" id="cycleGrid"></div>
   </div>
@@ -599,13 +598,7 @@ function matchesModel(model) {
   return true;
 }
 
-function updateIndicator() {
-  const ind = el('customIndicator');
-  if (!isCustom) { ind.style.display = 'none'; return; }
-  if (matchesModel('linear')) { ind.style.display = 'inline'; ind.textContent = 'Linear Model'; }
-  else if (matchesModel('exponential')) { ind.style.display = 'inline'; ind.textContent = 'Exponential Model'; }
-  else { ind.style.display = 'inline'; ind.textContent = 'Custom Prices'; }
-}
+function updateIndicator() {}
 
 function copyShareLink(btn) {
   const g = getG();
@@ -616,7 +609,7 @@ function copyShareLink(btn) {
     cp: cyclePrices.map(c => c.buy + ',' + c.sell).join(';')
   });
   const url = location.href.split('?')[0] + '?' + params.toString();
-  navigator.clipboard.writeText(url).then(() => flashBtn(btn, 'Copied!', 'Share'));
+  navigator.clipboard.writeText(url).then(() => flashBtn(btn, 'Copied!', 'Link'));
 }
 
 function copyResults(btn) {
@@ -626,26 +619,34 @@ function copyResults(btn) {
   const finalVal = finalDGB * (cyclePrices[rows.length-1]?.sell || g.pEnd);
   const initVal = g.startDGB * (cyclePrices[0]?.buy || g.pStart);
   const profCount = rows.filter(r => r.profitable).length;
+  const flatCount = rows.filter(r => r.sp === r.bp).length;
+  const lossCount = rows.filter(r => !r.profitable && r.sp !== r.bp).length;
   const lockLabel = el('mintRate').options[el('mintRate').selectedIndex].text;
-  const modelLabel = el('priceModel').value.charAt(0).toUpperCase() + el('priceModel').value.slice(1);
+  const cycleStats = [profCount + ' Profitable', lossCount > 0 ? lossCount + ' Loss' : '', flatCount > 0 ? flatCount + ' Flat' : ''].filter(Boolean).join(', ');
   let txt = `DigiDollar Compounding Calculator Results\n`;
   txt += `==========================================\n`;
   txt += `Starting DGB: ${fmt(g.startDGB)}\n`;
   txt += `Lock Period: ${lockLabel}\n`;
+  txt += `Total Cycles: ${g.n} (${cycleStats})\n`;
+  const modelLabel = el('priceModel').value.charAt(0).toUpperCase() + el('priceModel').value.slice(1);
   txt += `Price Model: ${isCustom ? 'Custom' : modelLabel}\n`;
-  txt += `Price Range: $${g.pStart} → $${g.pEnd}\n`;
-  txt += `Total Cycles: ${g.n} (${profCount} profitable)\n\n`;
+  txt += `Price Range: $${g.pStart} → $${g.pEnd}\n\n`;
   rows.forEach(r => {
-    txt += `Cycle ${r.c}: Buy $${fmtP(r.bp).slice(1)} → Sell $${fmtP(r.sp).slice(1)} | ${r.profitable ? '+' + fmt(r.gain) + ' DGB Gained' : 'Not Unlocked'}\n`;
+    const isLoss = !r.profitable && r.sp !== r.bp;
+    const isFlat = r.sp === r.bp;
+    const ddShortfall = isLoss ? Math.max(0, r.dd - r.sold * r.sp) : 0;
+    const cycleVal = fmtD(r.net * r.sp);
+    let status = r.profitable ? '+' + fmt(r.gain) + ' DGB Gained' : isFlat ? 'Flat' : fmtD(ddShortfall) + ' DD to Unlock';
+    txt += `Cycle ${r.c}: Buy $${fmtP(r.bp).slice(1)} → Sell $${fmtP(r.sp).slice(1)} | ${status} | Value: ${cycleVal}\n`;
   });
-  txt += `\nStarting DGB: ${fmt(g.startDGB)}\n`;
-  txt += `Final DGB: ${fmt(finalDGB)}\n`;
-  txt += `DGB Gained: +${fmt(finalDGB - g.startDGB)}\n`;
-  txt += `\nEntry Value: ${fmtD(initVal)}\n`;
-  txt += `Final Value: ${fmtD(finalVal)}\n`;
-  txt += `Value Multiplier: ${(finalVal / Math.max(initVal, 0.01)).toFixed(1)}x\n`;
-  txt += `\nRuns entirely in your browser — dd.luce.finance`;
-  navigator.clipboard.writeText(txt).then(() => flashBtn(btn, 'Copied!', 'Copy Results'));
+  txt += `\nStarting DGB:   ${fmt(g.startDGB)}\n`;
+  txt += `Final DGB:      ${fmt(finalDGB)}\n`;
+  txt += `DGB Gained:     +${fmt(finalDGB - g.startDGB)}\n`;
+  txt += `\nEntry Value:    ${fmtD(initVal)}\n`;
+  txt += `Final Value:    ${fmtD(finalVal)}\n`;
+  txt += `Value x:        ${(finalVal / Math.max(initVal, 0.01)).toFixed(1)}x\n`;
+  txt += `\ndd.luce.finance`;
+  navigator.clipboard.writeText(txt).then(() => flashBtn(btn, 'Copied!', 'Export'));
 }
 
 function flashBtn(btn, msg, original) {
