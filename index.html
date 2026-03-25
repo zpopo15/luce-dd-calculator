@@ -243,6 +243,23 @@
         <div class="hint" style="display:flex; align-items:center; gap:4px;"><span id="fdvEnd">FDV: $7.35B</span></div>
       </div>
     </div>
+    <div style="margin-top:12px; display:flex; justify-content:center;">
+      <div style="width:calc(50% - 4px);">
+      <label for="slippageInput">Slippage (%)</label>
+      <div class="spinner-wrap">
+        <input type="text" id="slippageInput" value="0.5" inputmode="decimal">
+        <div class="spinner-btns">
+          <button type="button" class="spinner-btn" data-action="slipUp">&#9650;</button>
+          <button type="button" class="spinner-btn" data-action="slipDown">&#9660;</button>
+        </div>
+      </div>
+      <div class="hint" style="display:flex; align-items:center; gap:6px;">
+        Applied to Both Buy and Sell Trades
+        <input type="checkbox" id="slippageToggle" onchange="toggleSlippage()" checked style="display:none;">
+        <a href="javascript:void(0)" id="slippageBtn" class="live-pill" onclick="document.getElementById('slippageToggle').click()" style="display:inline-block; text-align:center; width:60px;">Enabled</a>
+      </div>
+      </div>
+    </div>
   </div>
 
   <!-- Warning -->
@@ -296,8 +313,10 @@
             <th>Locked</th>
             <th>DD Mint</th>
             <th>Buy $</th>
+            <th>Eff. Buy</th>
             <th>Bought</th>
             <th>Sell $</th>
+            <th>Eff. Sell</th>
             <th>Sold</th>
             <th>DD Owed</th>
             <th>DGB Gain</th>
@@ -370,6 +389,15 @@ let lastRows = [], lastG = {};
 
 function isDark() { return document.documentElement.dataset.theme === 'dark'; }
 
+function toggleSlippage() {
+  const enabled = el('slippageToggle').checked;
+  el('slippageInput').style.opacity = enabled ? '1' : '0.5';
+  el('slippageInput').style.pointerEvents = enabled ? 'auto' : 'none';
+  const btn = el('slippageBtn');
+  if (btn) btn.textContent = enabled ? 'Enabled' : 'Disabled';
+  isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+}
+
 function getG() {
   return {
     startDGB: Math.min(2000000000, Math.max(1, +el('startDGB').value.replace(/,/g, '') || 1000000)),
@@ -377,7 +405,8 @@ function getG() {
     n: Math.min(MAX_CYCLES[el('mintRate').value]?.n || 40, Math.max(1, Math.round(+el('totalCycles').value || 12))),
     pStart: +el('modelStart').value || 0.004,
     pEnd: +el('modelEnd').value || 0.35,
-    model: el('priceModel').value
+    model: el('priceModel').value,
+    slippage: el('slippageToggle').checked ? (parseFloat(el('slippageInput').value) || 0.5) / 100 : 0
   };
 }
 
@@ -476,8 +505,9 @@ function simulate() {
 
   for (let i = 0; i < n; i++) {
     const cp = cyclePrices[i];
-    const bp = cp.buy, sp = cp.sell;
-    const dd = dgb * bp * g.mintRate;
+    const buyRaw = cp.buy, sellRaw = cp.sell;
+    const bp = buyRaw * (1 + g.slippage), sp = sellRaw * (1 - g.slippage);
+    const dd = dgb * buyRaw * g.mintRate;
     const bought = dd / bp;
     const soldRaw = sp > 0 ? dd / sp : bought;
     const sold = Math.min(soldRaw, bought);
@@ -487,7 +517,7 @@ function simulate() {
     dgb = dgb + gain;
     const profitable = sp > bp;
     if (profitable) profCount++;
-    rows.push({ c: i+1, locked: prev, dd, bought, bp, sp, sold, net: dgb, gain, profitable });
+    rows.push({ c: i+1, locked: prev, dd, bought, bp, sp, sold, net: dgb, gain, profitable, buyRaw, sellRaw });
     dgbH.push(dgb); valH.push(dgb * Math.max(sp, 0.0001)); labels.push('C' + (i+1));
 
     const entryVal = prev * bp;
@@ -575,9 +605,11 @@ function simulate() {
     <td style="${c()}">${r.c}</td>
     <td style="${c('var(--warn)')}">${fmt(r.locked)}</td>
     <td style="${c()}">${fmtD(r.dd)}</td>
-    <td style="${c('var(--gain)')}">${fmtP(r.bp)}</td>
+    <td style="${c('var(--gain)')}">${fmtP(r.buyRaw)}</td>
+    <td style="${c(r.bp !== r.buyRaw ? 'var(--warn)' : null)}">${r.bp !== r.buyRaw ? fmtP(r.bp) : '—'}</td>
     <td style="${c()}">${fmt(r.bought)}</td>
-    <td style="${c('var(--loss)')}">${fmtP(r.sp)}</td>
+    <td style="${c('var(--loss)')}">${fmtP(r.sellRaw)}</td>
+    <td style="${c(r.sp !== r.sellRaw ? 'var(--warn)' : null)}">${r.sp !== r.sellRaw ? fmtP(r.sp) : '—'}</td>
     <td style="${c()}">${fmt(r.sold)}</td>
     <td style="${(!r.profitable && r.sp !== r.bp) ? 'color:var(--loss);' : ''}">${(!r.profitable && r.sp !== r.bp) ? fmtD(Math.max(0, r.dd - r.sold * r.sp)) : '$0'}</td>
     <td style="${r.profitable ? 'color:#3b82f6;' : c()}">${r.profitable ? '+' + fmt(r.gain) : '0'}</td>
@@ -585,7 +617,7 @@ function simulate() {
     <td style="${c('var(--gain)')}">${fmtD(r.net * r.sp)}</td>
   </tr>`;
   }).join('') +
-  `<tr class="total-row"><td colspan="8">Total after ${n} cycles</td><td style="color:#3b82f6;">+${fmt(dgb - g.startDGB)}</td><td>${fmt(dgb)}</td><td style="color:var(--gain);">${fmtD(dgb * (cyclePrices[n-1]?.sell || g.pEnd))}</td></tr>`;
+  `<tr class="total-row"><td colspan="10">Total After ${n} ${n === 1 ? 'Cycle' : 'Cycles'}</td><td style="color:#3b82f6;">+${fmt(dgb - g.startDGB)}</td><td>${fmt(dgb)}</td><td style="color:var(--gain);">${fmtD(dgb * (cyclePrices[n-1]?.sell || g.pEnd))}</td></tr>`;
 }
 
 function matchesModel(model) {
@@ -606,6 +638,8 @@ function copyShareLink(btn) {
     s: g.startDGB, m: el('mintRate').value, n: g.n,
     ps: g.pStart, pe: g.pEnd, pm: g.model,
     custom: isCustom ? '1' : '0',
+    slip: el('slippageToggle').checked ? '1' : '0',
+    slipv: el('slippageInput').value,
     cp: cyclePrices.map(c => c.buy + ',' + c.sell).join(';')
   });
   const url = location.href.split('?')[0] + '?' + params.toString();
@@ -630,6 +664,7 @@ function copyResults(btn) {
   txt += `Total Cycles: ${g.n} (${cycleStats})\n`;
   const modelLabel = el('priceModel').value.charAt(0).toUpperCase() + el('priceModel').value.slice(1);
   txt += `Price Model: ${isCustom ? 'Custom' : modelLabel}\n`;
+  txt += `Slippage: ${g.slippage > 0 ? (g.slippage * 100).toFixed(1) + '%' : 'Disabled'}\n`;
   txt += `Price Range: $${g.pStart} → $${g.pEnd}\n\n`;
   rows.forEach(r => {
     const isLoss = !r.profitable && r.sp !== r.bp;
@@ -663,6 +698,11 @@ function loadFromParams() {
   el('modelStart').value = p.get('ps');
   el('modelEnd').value = p.get('pe');
   el('priceModel').value = p.get('pm');
+  if (p.has('slip')) {
+    el('slippageToggle').checked = p.get('slip') === '1';
+    if (p.has('slipv')) el('slippageInput').value = p.get('slipv');
+    toggleSlippage();
+  }
   updateMintHint();
   el('totalCycles').value = p.get('n'); // set after updateMintHint so it isn't overwritten
   if (p.has('cp')) {
@@ -696,6 +736,53 @@ function toggleTheme() {
   document.documentElement.dataset.theme = localStorage.getItem('theme') === 'dark' ? 'dark' : '';
   el('themeButton').textContent = document.documentElement.dataset.theme === 'dark' ? 'Light Mode' : 'Dark Mode';
 })();
+
+// Slippage input restrictions (0.1 to 5, max 1 decimal place)
+el('slippageInput').addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp') { e.preventDefault(); stepSlippage(0.1); return; }
+  if (e.key === 'ArrowDown') { e.preventDefault(); stepSlippage(-0.1); return; }
+  const allowed = ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'];
+  if (allowed.includes(e.key) || e.ctrlKey || e.metaKey) return;
+  if (e.key === '.') { if (e.target.value.includes('.')) e.preventDefault(); return; }
+  if (!/^\d$/.test(e.key)) { e.preventDefault(); return; }
+  const val = e.target.value, sel = e.target.selectionStart, selEnd = e.target.selectionEnd;
+  const proposed = val.slice(0, sel) + e.key + val.slice(selEnd);
+  const dot = proposed.indexOf('.');
+  if (dot !== -1 && proposed.length - dot - 1 > 1) { e.preventDefault(); return; }
+  if (parseFloat(proposed) > 5) { e.preventDefault(); e.target.value = '5'; e.target.dispatchEvent(new Event('input')); return; }
+});
+el('slippageInput').addEventListener('input', () => {
+  if (!el('slippageToggle').checked) return;
+  const v = parseFloat(el('slippageInput').value);
+  if (!isNaN(v) && v > 5) el('slippageInput').value = '5';
+  const dot = el('slippageInput').value.indexOf('.');
+  if (dot !== -1 && el('slippageInput').value.length - dot - 1 > 1) {
+    el('slippageInput').value = parseFloat(el('slippageInput').value).toFixed(1);
+  }
+  isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+});
+el('slippageInput').addEventListener('blur', () => {
+  const v = parseFloat(el('slippageInput').value);
+  if (isNaN(v) || v < 0.1) el('slippageInput').value = '0.1';
+  else if (v > 5) el('slippageInput').value = '5';
+  else el('slippageInput').value = parseFloat(el('slippageInput').value).toFixed(1);
+  if (el('slippageToggle').checked) { isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate(); }
+});
+el('slippageInput').addEventListener('paste', e => {
+  e.preventDefault();
+  const val = parseFloat((e.clipboardData || window.clipboardData).getData('text'));
+  if (isNaN(val) || val < 0.1 || val > 5) return;
+  el('slippageInput').value = +val.toFixed(1);
+  if (el('slippageToggle').checked) { isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate(); }
+});
+
+function stepSlippage(dir) {
+  if (!el('slippageToggle').checked) return;
+  const v = parseFloat(el('slippageInput').value) || 0.5;
+  const next = Math.min(5, Math.max(0.1, +(v + dir).toFixed(1)));
+  el('slippageInput').value = next;
+  isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+}
 
 function stepCycles(dir) {
   const v = Math.round(+el('totalCycles').value || 1);
@@ -942,7 +1029,9 @@ function makeHoldRepeat(fn) {
     "msUp":      makeHoldRepeat(function() { stepModel("modelStart", 0.0001); }),
     "msDown":    makeHoldRepeat(function() { stepModel("modelStart", -0.0001); }),
     "meUp":      makeHoldRepeat(function() { stepModel("modelEnd", 0.0001); }),
-    "meDown":    makeHoldRepeat(function() { stepModel("modelEnd", -0.0001); })
+    "meDown":    makeHoldRepeat(function() { stepModel("modelEnd", -0.0001); }),
+    "slipUp":    makeHoldRepeat(function() { stepSlippage(0.1); }),
+    "slipDown":  makeHoldRepeat(function() { stepSlippage(-0.1); })
   };
 
   function attach(btn, handler) {
