@@ -142,6 +142,8 @@
     .model-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; align-items: start; }
     @media (max-width: 520px) { .model-row { grid-template-columns: 1fr; } }
 
+    .eff-col { }
+    #cycleTable.slippage-hidden .eff-col { display: none; }
     .action-row { display: flex; gap: 8px; margin-top: 12px; justify-content: center; flex-wrap: wrap; }
     .action-btn { height: 36px; line-height: 36px; padding: 0 20px; font-size: 12px; width: auto; min-width: 160px; margin: 0; background-image: none; background-color: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 8px; font-family: 'Josefin Sans', sans-serif; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; transition: background 0.15s, color 0.15s; }
     .action-btn:hover { background-color: var(--primary); color: #fff; background-image: none; }
@@ -308,19 +310,19 @@
   <div class="box" style="padding-bottom: 10px;">
     <h3>Full Cycle Breakdown</h3>
     <div class="table-scroll">
-      <table>
+      <table id="cycleTable">
         <thead>
           <tr>
             <th>Cycle</th>
             <th>Locked</th>
             <th>DD Mint</th>
             <th>Buy $</th>
-            <th>Eff. Buy</th>
+            <th class="eff-col">Eff. Buy</th>
             <th>Bought</th>
             <th>Sell $</th>
-            <th>Eff. Sell</th>
+            <th class="eff-col">Eff. Sell</th>
             <th>Sold</th>
-            <th>DD Owed</th>
+            <th>DD Loss</th>
             <th>DGB Gain</th>
             <th>Net DGB</th>
             <th>Value</th>
@@ -397,6 +399,8 @@ function toggleSlippage() {
   el('slippageInput').style.pointerEvents = enabled ? 'auto' : 'none';
   const btn = el('slippageBtn');
   if (btn) btn.textContent = enabled ? 'Enabled' : 'Disabled';
+  const t = el('cycleTable');
+  if (t) enabled ? t.classList.remove('slippage-hidden') : t.classList.add('slippage-hidden');
   isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
 }
 
@@ -404,7 +408,7 @@ function getG() {
   return {
     startDGB: Math.min(2000000000, Math.max(1, +el('startDGB').value.replace(/,/g, '') || 1000000)),
     mintRate: Math.min(1, Math.max(0.001, parseFloat(el('mintRate').value || 25) / 100)),
-    n: Math.min(MAX_CYCLES[el('mintRate').value]?.n || 40, Math.max(1, Math.round(+el('totalCycles').value || 12))),
+    n: Math.max(1, Math.round(+el('totalCycles').value || 1)),
     pStart: +el('modelStart').value || 0.004,
     pEnd: +el('modelEnd').value || 0.35,
     model: el('priceModel').value,
@@ -428,6 +432,28 @@ function buildPrices(n) {
   }
 }
 
+function resetCycle(i) {
+  const g = getG();
+  const n = cyclePrices.length;
+  const buy = +modelPrice(i, n + 1, g.pStart, g.pEnd, g.model).toFixed(4);
+  const sell = +modelPrice(i + 1, n + 1, g.pStart, g.pEnd, g.model).toFixed(4);
+  cyclePrices[i] = { buy, sell, custom: false };
+  // Update inputs directly
+  const cell = el('cell' + i);
+  if (cell) {
+    const buyInp = cell.querySelector('[data-t="buy"]');
+    const sellInp = cell.querySelector('[data-t="sell"]');
+    if (buyInp) buyInp.value = buy.toFixed(4);
+    if (sellInp) sellInp.value = sell.toFixed(4);
+    cell.className = 'cycle-cell';
+    const resetBtn = cell.querySelector('[data-reset]');
+    if (resetBtn) resetBtn.style.visibility = 'hidden';
+  }
+  isCustom = cyclePrices.some(c => c.custom);
+  updateIndicator();
+  simulate();
+}
+
 function resetToModel(model, btn) {
   el('priceModel').value = model;
   isCustom = false;
@@ -449,7 +475,10 @@ function buildGrid(n) {
     cell.className = 'cycle-cell' + (cp.custom ? ' custom-edited' : '');
     cell.id = 'cell' + i;
     cell.innerHTML = `
-      <div class="cycle-num-label">Cycle ${i + 1}</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <div class="cycle-num-label" style="margin-bottom:0;">Cycle ${i + 1}</div>
+        <a href="javascript:void(0)" data-reset="${i}" style="font-size:11px; color:var(--muted); text-decoration:none; font-weight:600; visibility:${cp.custom ? 'visible' : 'hidden'};" onmousedown="event.preventDefault(); resetCycle(${i})">↺</a>
+      </div>
       <div class="price-row">
         <span class="plabel">Buy</span>
         <input class="price-input buy" type="text" inputmode="decimal" value="${cp.buy.toFixed(4)}" data-i="${i}" data-t="buy">
@@ -472,10 +501,16 @@ function buildGrid(n) {
       if (!isNaN(v) && v > 0) {
         if (v > PRICE_MAX) { v = PRICE_MAX; inp.value = v.toFixed(4); }
         cyclePrices[i][t] = +v.toFixed(4);
-        cyclePrices[i].custom = true;
-        el('cell' + i).className = 'cycle-cell custom-edited';
-        // gainpct will be updated by simulate()
-        isCustom = true;
+        const g2 = getG();
+        const n2 = cyclePrices.length;
+        const expBuy = +modelPrice(i, n2 + 1, g2.pStart, g2.pEnd, g2.model).toFixed(4);
+        const expSell = +modelPrice(i + 1, n2 + 1, g2.pStart, g2.pEnd, g2.model).toFixed(4);
+        const stillCustom = cyclePrices[i].buy !== expBuy || cyclePrices[i].sell !== expSell;
+        cyclePrices[i].custom = stillCustom;
+        el('cell' + i).className = 'cycle-cell' + (stillCustom ? ' custom-edited' : '');
+        const resetBtn = el('cell' + i).querySelector('[data-reset]');
+        if (resetBtn) resetBtn.style.visibility = stillCustom ? 'visible' : 'hidden';
+        isCustom = cyclePrices.some(c => c.custom);
         updateIndicator();
         simulate();
       }
@@ -488,8 +523,11 @@ function buildGrid(n) {
       cyclePrices[i][t] = +parseFloat(inp.value).toFixed(4);
     });
     inp.addEventListener('paste', e => {
-      const val = parseFloat((e.clipboardData || window.clipboardData).getData('text'));
-      if (isNaN(val) || val < PRICE_MIN || val > PRICE_MAX) e.preventDefault();
+      e.preventDefault();
+      const val = parseFloat((e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9.]/g, ''));
+      if (isNaN(val) || val < PRICE_MIN || val > PRICE_MAX) return;
+      inp.value = +val.toFixed(4);
+      inp.dispatchEvent(new Event('input'));
     });
   });
   rebuilding = false;
@@ -525,13 +563,13 @@ function simulate() {
     const pricePct = cp.buy > 0 ? ((cp.sell - cp.buy) / cp.buy * 100) : 0;
     const pricePctColor = pricePct > 0 ? 'var(--gain)' : pricePct < 0 ? 'var(--loss)' : 'var(--muted)';
     const beEl = el('be' + i);
-    if (beEl) beEl.innerHTML = `<span style="color:${pricePctColor}">${(pricePct >= 0 ? '+' : '') + pricePct.toFixed(1)}%<br>${pricePct > 0 ? 'Value Gained' : pricePct < 0 ? 'Value Lost' : 'Value Gained'}</span>`;
+    if (beEl) beEl.innerHTML = `<span style="color:${pricePctColor}">${(pricePct > 0 ? '+' : '') + pricePct.toFixed(1)}%<br>${pricePct > 0 ? 'Value Gained' : pricePct < 0 ? 'Value Lost' : 'Value Gained'}</span>`;
 
     const badge = el('cb' + i);
     if (badge) {
       if (profitable) { badge.className = 'cbadge pos'; badge.innerHTML = '+' + fmt(Math.round(gain)) + '<br>DGB Gained'; }
       else if (sp === bp) { badge.className = 'cbadge flat'; badge.innerHTML = '0<br>DGB Gained'; }
-      else { const ddRecovered = sold * sp; const ddShortfall = Math.max(0, dd - ddRecovered); badge.className = 'cbadge locked'; badge.innerHTML = fmtD(ddShortfall) + ' DD<br>to Unlock'; }
+      else { const ddRecovered = sold * sp; const ddShortfall = Math.max(0, dd - ddRecovered); badge.className = 'cbadge locked'; badge.innerHTML = '+' + fmtD(ddShortfall) + ' DD<br>to Unlock'; }
     }
   }
   lastRows = rows;
@@ -606,18 +644,24 @@ function simulate() {
     <td style="${c('var(--warn)')}">${fmt(r.locked)}</td>
     <td style="${c()}">${fmtD(r.dd)}</td>
     <td style="${c('var(--gain)')}">${fmtP(r.buyRaw)}</td>
-    <td style="${c(r.bp !== r.buyRaw ? 'var(--warn)' : null)}">${r.bp !== r.buyRaw ? fmtP(r.bp) : '—'}</td>
+    <td class="eff-col" style="${c(r.bp !== r.buyRaw ? 'var(--warn)' : null)}">${r.bp !== r.buyRaw ? fmtP(r.bp) : '—'}</td>
     <td style="${c()}">${fmt(r.bought)}</td>
     <td style="${c('var(--loss)')}">${fmtP(r.sellRaw)}</td>
-    <td style="${c(r.sp !== r.sellRaw ? 'var(--warn)' : null)}">${r.sp !== r.sellRaw ? fmtP(r.sp) : '—'}</td>
+    <td class="eff-col" style="${c(r.sp !== r.sellRaw ? 'var(--warn)' : null)}">${r.sp !== r.sellRaw ? fmtP(r.sp) : '—'}</td>
     <td style="${c()}">${fmt(r.sold)}</td>
-    <td style="${(!r.profitable && r.sp !== r.bp) ? 'color:var(--loss);' : ''}">${(!r.profitable && r.sp !== r.bp) ? fmtD(Math.max(0, r.dd - r.sold * r.sp)) : '$0'}</td>
+    <td style="${r.dd - r.sold * r.sp > 0.001 ? 'color:var(--loss);' : ''}">${r.dd - r.sold * r.sp > 0.001 ? fmtD(r.dd - r.sold * r.sp) : '$0'}</td>
     <td style="${r.profitable ? 'color:#3b82f6;' : c()}">${r.profitable ? '+' + fmt(r.gain) : '0'}</td>
     <td style="${c()}">${fmt(r.net)}</td>
     <td style="${c('var(--gain)')}">${fmtD(r.net * r.sp)}</td>
   </tr>`;
   }).join('') +
-  `<tr class="total-row"><td colspan="10">Total After ${n} ${n === 1 ? 'Cycle' : 'Cycles'}</td><td style="color:#3b82f6;">+${fmt(dgb - g.startDGB)}</td><td>${fmt(dgb)}</td><td style="color:var(--gain);">${fmtD(dgb * (cyclePrices[n-1]?.sell || g.pEnd))}</td></tr>`;
+  `<tr class="total-row">
+    <td colspan="${g.slippage > 0 ? 9 : 7}">Total After ${n} ${n === 1 ? 'Cycle' : 'Cycles'}</td>
+    <td style="${rows.some(r => r.dd - r.sold * r.sp > 0.001) ? 'color:var(--loss);' : ''}">${(() => { const excess = rows.reduce((s,r) => s + Math.max(0, r.dd - r.sold * r.sp), 0); return excess > 0.001 ? fmtD(excess) : '$0'; })()}</td>
+    <td style="color:#3b82f6;">+${fmt(dgb - g.startDGB)}</td>
+    <td>${fmt(dgb)}</td>
+    <td style="color:var(--gain);">${fmtD(dgb * (cyclePrices[n-1]?.sell || g.pEnd))}</td>
+  </tr>`;
 }
 
 function matchesModel(model) {
@@ -671,12 +715,18 @@ function copyResults(btn) {
     const isFlat = r.sp === r.bp;
     const ddShortfall = isLoss ? Math.max(0, r.dd - r.sold * r.sp) : 0;
     const cycleVal = fmtD(r.net * r.sp);
-    let status = r.profitable ? '+' + fmt(r.gain) + ' DGB Gained' : isFlat ? 'Flat' : fmtD(ddShortfall) + ' DD to Unlock';
-    txt += `Cycle ${r.c}: Buy $${fmtP(r.bp).slice(1)} → Sell $${fmtP(r.sp).slice(1)} | ${status} | Value: ${cycleVal}\n`;
+    let status = r.profitable ? '+' + fmt(r.gain) + ' DGB Gained' : isFlat ? 'Flat' : '+' + fmtD(ddShortfall) + ' DD to Unlock';
+    const effBuyDiffers = Math.abs(r.bp - r.buyRaw) > 0.000001;
+    const effSellDiffers = Math.abs(r.sp - r.sellRaw) > 0.000001;
+    const slipNote = g.slippage > 0 && (effBuyDiffers || effSellDiffers)
+      ? ` (Eff. Buy $${fmtP(r.bp).slice(1)} / Eff. Sell $${fmtP(r.sp).slice(1)})` : '';
+    txt += `Cycle ${r.c}: Buy $${fmtP(r.buyRaw).slice(1)} → Sell $${fmtP(r.sellRaw).slice(1)}${slipNote} | ${status} | Value: ${cycleVal}\n`;
   });
+  const totalDDLoss = rows.reduce((s, r) => s + Math.max(0, r.dd - r.sold * r.sp), 0);
   txt += `\nStarting DGB:   ${fmt(g.startDGB)}\n`;
   txt += `Final DGB:      ${fmt(finalDGB)}\n`;
   txt += `DGB Gained:     +${fmt(finalDGB - g.startDGB)}\n`;
+  if (totalDDLoss > 0.001) txt += `DD to Unlock:   ${fmtD(totalDDLoss)}\n`;
   txt += `\nEntry Value:    ${fmtD(initVal)}\n`;
   txt += `Final Value:    ${fmtD(finalVal)}\n`;
   txt += `Value x:        ${(finalVal / Math.max(initVal, 0.01)).toFixed(1)}x\n`;
@@ -707,11 +757,18 @@ function loadFromParams() {
   el('totalCycles').value = p.get('n'); // set after updateMintHint so it isn't overwritten
   if (p.has('cp')) {
     const pairs = p.get('cp').split(';');
-    cyclePrices = pairs.map(pair => {
+    const rawIsCustom = p.get('custom') === '1';
+    cyclePrices = pairs.map((pair, idx) => {
       const [buy, sell] = pair.split(',').map(Number);
-      return { buy: +buy.toFixed(4), sell: +sell.toFixed(4), custom: false };
+      const b = +buy.toFixed(4), s = +sell.toFixed(4);
+      const g2 = getG();
+      const n2 = pairs.length;
+      const expBuy = +modelPrice(idx, n2 + 1, g2.pStart, g2.pEnd, g2.model).toFixed(4);
+      const expSell = +modelPrice(idx + 1, n2 + 1, g2.pStart, g2.pEnd, g2.model).toFixed(4);
+      const isEdited = rawIsCustom && (b !== expBuy || s !== expSell);
+      return { buy: b, sell: s, custom: isEdited };
     });
-    isCustom = p.get('custom') === '1';
+    isCustom = rawIsCustom;
     if (isCustom) {
       if (matchesModel('linear') || matchesModel('exponential')) isCustom = false;
     }
@@ -866,6 +923,10 @@ el('startDGB').addEventListener('paste', e => {
   simulate();
 });
 el('mintRate').addEventListener('change', updateMintHint);
+el('totalCycles').addEventListener('keydown', e => {
+  const blocked = ['.', ',', '-', '+', 'e', 'E', '='];
+  if (blocked.includes(e.key)) e.preventDefault();
+});
 el('totalCycles').addEventListener('input', () => {
   const raw = el('totalCycles').value;
   if (raw === '' || raw === '-') return; // allow empty while typing
@@ -880,8 +941,12 @@ el('totalCycles').addEventListener('blur', () => {
   const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
 });
 el('totalCycles').addEventListener('paste', e => {
-  const val = Math.round(parseFloat((e.clipboardData || window.clipboardData).getData('text')));
-  if (isNaN(val) || val < 1 || val > 240) e.preventDefault();
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData('text');
+  const val = Math.round(parseFloat(text.replace(/[^0-9]/g, '')));
+  if (isNaN(val) || val < 1) return;
+  el('totalCycles').value = Math.min(240, val);
+  const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
 });
 
 el('priceModel').addEventListener('change', () => { isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate(); });
@@ -976,6 +1041,20 @@ updateFDV();
     })
     .catch(() => { window._liveStatus = 'Live Price Unavailable'; updateFDV(); });
 })();
+
+setInterval(function() {
+  fetch('https://api.coingecko.com/api/v3/simple/price?ids=digibyte&vs_currencies=usd')
+    .then(r => r.json())
+    .then(data => {
+      const price = data?.digibyte?.usd;
+      if (!price) return;
+      window._livePrice = +price.toFixed(4);
+      window._liveStatus = null;
+      updateFDV();
+    })
+    .catch(() => {});
+}, 5 * 60 * 1000);
+
 
 function applyLivePrice(price, btn) {
   if (btn) {
