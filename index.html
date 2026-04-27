@@ -44,8 +44,9 @@
       --warn-border: #78560a;
     }
     * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-    html { background: var(--bg); }
-    body { margin: 0; padding: 0 0 clamp(12px, 3vw, 24px); background: var(--bg); color: var(--text); transition: background 0.3s ease, color 0.3s ease; }
+    html { background: var(--bg); height:100%; }
+    body { margin: 0; padding: 0; background: var(--bg); color: var(--text); transition: background 0.3s ease, color 0.3s ease; height:100%; display:flex; flex-direction:column; overflow:hidden; }
+    #appScroll { flex:1 1 auto; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding: 0 0 clamp(12px, 3vw, 24px); }
     .container { max-width: min(92vw, 820px); margin: auto; padding: 0 clamp(12px, 3vw, 24px); }
     h2, h3 { font-family: 'Cardo', serif; font-weight: 400; text-align: center; margin-top: 0; margin-bottom: 16px; }
     h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
@@ -175,7 +176,7 @@
     .tab-pane.active { display: block; padding-top: 20px; }
 
     /* Tracker */
-    .tracker-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0; margin-bottom: 10px; overflow: hidden; scroll-margin-top: var(--header-h, 160px); }
+    .tracker-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0; margin-bottom: 10px; overflow: hidden; }
     .tracker-card-header { display:flex; justify-content:space-between; align-items:center; gap:8px; cursor:pointer; padding:14px; user-select:none; transition:background 0.15s; }
     .tracker-card-header:hover { background: var(--divider); }
     .tracker-card.status-active { border-left: 3px solid var(--primary); }
@@ -212,15 +213,10 @@
     .sticky-header-inner { display:flex; justify-content:space-between; align-items:center; padding:8px clamp(12px, 3vw, 24px) 12px; max-width: min(92vw, 820px); margin: 0 auto; box-sizing:content-box; }
     .sticky-header .tab-nav { max-width: min(92vw, 820px); margin: 0 auto; padding: 0 clamp(12px, 3vw, 24px); }
     .sticky-header-inner img { will-change:height; }
-    #headerWrapper { position:fixed; top:0; left:0; right:0; z-index:9999; background:var(--bg); transition:background 0.3s ease; transform:translateZ(0); -webkit-transform:translateZ(0); will-change:transform; backface-visibility:hidden; -webkit-backface-visibility:hidden; isolation:isolate; contain:layout style; }
-    #headerSpacer { width:100%; }
-    /* Solid backdrop that fills any gap above the header during iOS momentum scroll */
-    #headerBackdrop { position:fixed; top:-200px; left:0; right:0; height:calc(200px + var(--header-h, 160px)); background:var(--bg); z-index:9998; pointer-events:none; transform:translateZ(0); -webkit-transform:translateZ(0); will-change:transform; }
+    #headerWrapper { flex-shrink:0; background:var(--bg); transition:background 0.3s ease; z-index:50; position:relative; }
   </style>
 </head>
 <body>
-
-  <div id="headerBackdrop"></div>
 
   <div id="headerWrapper">
   <div class="sticky-header" id="stickyHeader">
@@ -232,8 +228,8 @@
       <button id="themeButton" onclick="toggleTheme()" onmouseover="this.style.background='var(--primary)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--primary)'" style="width:auto; height:32px; line-height:32px; padding:0 12px; margin:0; border-radius:8px; border:1px solid var(--primary); background:transparent; color:var(--primary); cursor:pointer; font-family:'Josefin Sans',sans-serif; font-size:clamp(10px, 2.5vw, 12px); font-weight:600; letter-spacing:0.04em; white-space:nowrap; transition:background 0.15s, color 0.15s;">Dark Mode</button>
     </div>
     <div class="tab-nav">
-      <button class="tab-btn active" onclick="window.scrollTo({top:0, behavior: this.classList.contains('active') ? 'smooth' : 'instant'}); switchTab('calculator', this);">Calculator</button>
-      <button class="tab-btn" onclick="window.scrollTo({top:0, behavior: this.classList.contains('active') ? 'smooth' : 'instant'}); switchTab('tracker', this);">My Cycles</button>
+      <button class="tab-btn active" onclick="document.getElementById('appScroll').scrollTo({top:0, behavior: this.classList.contains('active') ? 'smooth' : 'instant'}); switchTab('calculator', this);">Calculator</button>
+      <button class="tab-btn" onclick="document.getElementById('appScroll').scrollTo({top:0, behavior: this.classList.contains('active') ? 'smooth' : 'instant'}); switchTab('tracker', this);">My Cycles</button>
     </div>
   </div>
   <div class="tracker-sub-header" id="trackerSubHeader">
@@ -251,7 +247,7 @@
   </div>
   </div>
 
-<div id="headerSpacer"></div>
+<div id="appScroll">
 <div class="container" id="mainContainer">
 
   <!-- Calculator Tab -->
@@ -452,6 +448,7 @@
   </div><!-- end tab-tracker -->
 
 </div><!-- end container -->
+</div><!-- end appScroll -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -1251,13 +1248,7 @@ function applyLivePrice(price, btn) {
 //  TAB SWITCHING
 // ═══════════════════════════════════════════════════════
 function setHeaderOffset() {
-  const wrapper = document.getElementById('headerWrapper');
-  const spacer = document.getElementById('headerSpacer');
-  if (wrapper) {
-    const h = wrapper.offsetHeight;
-    document.documentElement.style.setProperty('--header-h', h + 'px');
-    if (spacer) spacer.style.height = h + 'px';
-  }
+  // Header is in normal flow now - no offset calculation needed
 }
 
 function switchTab(tab, btn) {
@@ -2664,7 +2655,7 @@ function toggleCollapseAll(btn) {
   // Lock viewport: keep anchor at the same Y position relative to viewport
   if (anchor) {
     const anchorTopAfter = anchor.getBoundingClientRect().top;
-    window.scrollBy({ top: anchorTopAfter - anchorTopBefore, behavior: 'instant' });
+    document.getElementById('appScroll').scrollBy({ top: anchorTopAfter - anchorTopBefore, behavior: 'instant' });
   }
 
   // Re-enable transitions on next frame
