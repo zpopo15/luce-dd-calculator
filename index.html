@@ -212,7 +212,7 @@
     .sticky-header-inner { display:flex; justify-content:space-between; align-items:center; padding:8px clamp(12px, 3vw, 24px) 12px; max-width: min(92vw, 820px); margin: 0 auto; box-sizing:content-box; }
     .sticky-header .tab-nav { max-width: min(92vw, 820px); margin: 0 auto; padding: 0 clamp(12px, 3vw, 24px); }
     .sticky-header-inner img { will-change:height; }
-    #headerWrapper { position:fixed; top:0; left:0; right:0; z-index:50; background:var(--bg); transition:background 0.3s ease; }
+    #headerWrapper { position:fixed; top:0; left:0; right:0; z-index:50; background:var(--bg); transition:background 0.3s ease; transform:translateZ(0); -webkit-transform:translateZ(0); will-change:transform; backface-visibility:hidden; -webkit-backface-visibility:hidden; }
     #headerSpacer { width:100%; }
   </style>
 </head>
