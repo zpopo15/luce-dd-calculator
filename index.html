@@ -6,6 +6,7 @@
   <title>luce.finance DigiDollar Compounding Calculator</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="favicon-apple.png">
+  <script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.dataset.theme="dark";}catch(e){}</script>
   <link href="https://fonts.googleapis.com/css2?family=Cardo&family=Josefin+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -43,37 +44,31 @@
       --warn-border: #78560a;
     }
     * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-    body { margin: 0; padding: clamp(12px, 3vw, 24px); background: var(--bg); color: var(--text); transition: background 0.3s ease, color 0.3s ease; }
+    body { margin: 0; padding: 0 0 clamp(12px, 3vw, 24px); background: var(--bg); color: var(--text); transition: background 0.3s ease, color 0.3s ease; }
+    .container { max-width: min(92vw, 820px); margin: auto; padding: 0 clamp(12px, 3vw, 24px); }
     h2, h3 { font-family: 'Cardo', serif; font-weight: 400; text-align: center; margin-top: 0; margin-bottom: 16px; }
     h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
     h3 { font-size: clamp(1.1rem, 3vw, 1.4rem); margin-bottom: 12px; }
-    .container { max-width: min(92vw, 820px); margin: auto; }
     .box { background: var(--card); border-radius: 14px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 6px 16px rgba(0,0,0,.08); width: 100%; transition: background 0.3s ease, border 0.3s ease; }
     label { display: block; margin-top: 8px; margin-bottom: 6px; font-size: 14px; font-weight: 400; color: var(--text); opacity: 0.9; }
     input, select { width: 100%; font-size: 14px; padding: 11px; border-radius: 10px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--input-text); font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s; }
-    select { -webkit-appearance: none; -moz-appearance: none; appearance: none; padding-right: 36px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; cursor: pointer; height: 47px; }
+    select { -webkit-appearance: none; -moz-appearance: none; appearance: none; padding-right: 36px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; cursor: pointer; }
     [data-theme="dark"] select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239ca3af'/%3E%3C/svg%3E"); }
     input:focus, select:focus { border-color: var(--primary); }
     select option { background: var(--card); color: var(--text); }
-    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    @media (max-width: 520px) { .input-row { grid-template-columns: 1fr; } }
-    .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
-    .slippage-wrap { width: calc(50% - 4px); margin: 0 auto; }
-    @media (max-width: 520px) { .slippage-wrap { width: 100%; } }
+    .input-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    @media (max-width: 640px) { .input-row { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 640px) { .input-row label { font-size: 12px; } }
+    @media (max-width: 480px) { .input-row label { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+    @media (max-width: 340px) { .input-row { grid-template-columns: 1fr; } }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 4px; word-break: break-word; }
+    @media (max-width: 480px) { .hint { font-size: 10px; } }
+
     .group-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
     a.live-pill { font-size: 10px; color: var(--primary); background: transparent; border: 1px solid var(--primary); border-radius: 4px; padding: 2px 7px; text-decoration: none; vertical-align: middle; white-space: nowrap; font-weight: 600; transition: background 0.15s, color 0.15s; }
     a.live-pill:hover { background: var(--primary); color: #fff; }
-    .spinner-wrap { display:flex; border:1px solid var(--input-border); border-radius:10px; overflow:hidden; background:var(--input-bg); transition: border-color 0.2s; }
-    .spinner-wrap:focus-within { border-color: var(--primary); }
-    .spinner-wrap input { border:none; border-radius:0; flex:1; background:transparent; outline:none; }
-    .spinner-wrap input:focus { border-color: transparent; }
-    .spinner-btns { display:flex; flex-direction:column; border-left:1px solid var(--input-border); flex-shrink:0; }
-    .spinner-btn { all:unset; width:30px; height:22px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); font-size:9px; background:var(--input-bg); transition: color 0.15s; }
-    .spinner-btn:first-child { border-bottom:1px solid var(--input-border); }
-    .spinner-btn:hover { color:var(--text); }
-    .spinner-wrap input[type=number]::-webkit-inner-spin-button,
-    .spinner-wrap input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-    .spinner-wrap input[type=number] { -moz-appearance: textfield; }
+    a.live-pill.danger { color: var(--loss); border-color: var(--loss); }
+    a.live-pill.danger:hover { background: var(--loss); color: #fff; }
     .divider { border: none; border-top: 1px solid var(--divider); margin: 20px 0; }
 
     button {
@@ -89,6 +84,7 @@
     button:active { background: var(--primary); color: #fff; }
 
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+    @media (max-width: 600px) { .metrics-grid { display: flex; flex-wrap: wrap; justify-content: center; } .metrics-grid .metric-card { flex: 1 1 130px; max-width: calc(50% - 6px); } }
     .metric-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; text-align: center; }
     .metric-label { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: 0.03em; margin-bottom: 4px; text-transform: uppercase; }
     .metric-value { font-size: 17px; font-weight: 700; color: var(--text); font-family: 'Montserrat', sans-serif; }
@@ -108,9 +104,11 @@
     .cycle-num-label { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 6px; text-transform: uppercase; }
     .price-row { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
     .plabel { font-size: 10px; color: var(--muted); width: 24px; flex-shrink: 0; font-weight: 500; }
-    .price-input { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 6px; color: var(--input-text); font-family: 'Montserrat', sans-serif; font-size: 11px; padding: 4px 6px; width: 100%; min-width: 0; outline: none; -moz-appearance: textfield; }
+    .price-input { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 6px; color: var(--input-text); font-family: 'Montserrat', sans-serif; font-size: 11px; padding: 4px 6px; width: 100%; min-width: 0; outline: none; -moz-appearance: textfield; appearance: textfield; }
     .price-input::-webkit-inner-spin-button, .price-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     .price-input:focus { border-color: var(--primary); }
+    .price-input.buy:focus { border-color: var(--gain); }
+    .price-input.sell:focus { border-color: var(--loss); }
     .price-input.buy { color: var(--gain); }
     .price-input.sell { color: var(--loss); }
     [data-theme="dark"] .price-input.buy { color: var(--gain); }
@@ -124,9 +122,9 @@
 
     .table-scroll { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    th { text-align: right; padding: 6px 4px; color: var(--muted); font-weight: 600; font-size: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; letter-spacing: 0.02em; text-transform: uppercase; }
+    th { text-align: right; padding: 6px 3px; color: var(--muted); font-weight: 600; font-size: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; letter-spacing: 0.02em; text-transform: uppercase; }
     th:first-child { text-align: left; }
-    td { text-align: right; padding: 6px 4px; color: var(--text); border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 11px; }
+    td { text-align: right; padding: 6px 3px; color: var(--text); border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 11px; }
     td:first-child { text-align: left; color: var(--muted); font-weight: 600; }
     td.gain { color: #3b82f6; font-weight: 600; }
     td.loss { color: var(--loss); }
@@ -139,30 +137,120 @@
     .section-note { font-size: 12px; color: var(--muted); text-align: center; margin: 0 0 16px 0; line-height: 1.5; }
     .privacy-note { font-size: 11px; color: var(--muted); text-align: center; margin: 0 auto 20px auto; padding: 8px 20px; border: 1px solid var(--divider); border-radius: 10px; line-height: 1.6; display: inline-block; }
     .privacy-note strong { color: var(--text); }
-    .model-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; align-items: start; }
-    @media (max-width: 520px) { .model-row { grid-template-columns: 1fr; } }
+    .date-combo { display:flex; border:1px solid var(--input-border); border-radius:10px; overflow:hidden; background:var(--input-bg); transition:border-color 0.2s; }
+    .date-combo:focus-within { border-color: var(--primary); }
+    .date-combo input[type="text"] { border:none; border-radius:0; flex:1; background:transparent; outline:none; font-size:12px; padding:7px 9px; color:var(--input-text); font-family:'Montserrat',sans-serif; min-width:0; }
+    .date-combo.disabled { opacity:0.5; pointer-events:none; }
+    .entry-row { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; align-items:end; margin-bottom:4px; }
+    .entry-auto { display:flex; flex-direction:column; gap:3px; }
+    .entry-auto .auto-label { font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); margin:0; opacity:1; }
+    .entry-auto .auto-value { font-size:12px; padding:7px 9px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--muted); font-family:'Montserrat',sans-serif; cursor:default; }
+    .entry-remaining { font-size:10px; color:var(--muted); padding:2px 0 8px 2px; }
 
-    .eff-col { }
+    .add-entry-btn { all:unset; box-sizing:border-box; cursor:pointer; font-size:11px; font-family:'Josefin Sans',sans-serif; font-weight:600; letter-spacing:0.04em; color:var(--primary); border:1px solid var(--primary); border-radius:6px; padding:6px 12px 5px; transition:background 0.15s, color 0.15s; margin-top:4px; display:inline-flex; align-items:center; }
+    .add-entry-btn:hover { background:var(--primary); color:#fff; }
+    @media (max-width:520px) { .entry-row { grid-template-columns:1fr 1fr; } }
+    .model-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 8px; align-items: start; }
+    @media (max-width: 640px) { .model-row { display: flex; flex-wrap: wrap; justify-content: center; } .model-row > * { flex: 0 1 calc(50% - 6px); min-width: 120px; } }
+    @media (max-width: 360px) { .model-row > * { flex: 0 1 100%; } }
+
     #cycleTable.slippage-hidden .eff-col { display: none; }
-    .action-row { display: flex; gap: 8px; margin-top: 12px; justify-content: center; flex-wrap: wrap; }
+    .tracker-share-btns { display:flex; flex-direction:column; align-items:center; gap:8px; }
+    .tracker-share-btns-row { display:flex; gap:8px; justify-content:center; width:100%; max-width:328px; }
+    .tracker-share-btns-row .action-btn { flex:1; min-width:0; }
     .action-btn { height: 36px; line-height: 36px; padding: 0 20px; font-size: 12px; width: auto; min-width: 160px; margin: 0; background-image: none; background-color: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 8px; font-family: 'Josefin Sans', sans-serif; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; transition: background 0.15s, color 0.15s; }
     .action-btn:hover { background-color: var(--primary); color: #fff; background-image: none; }
     .action-btn:active { background-color: var(--primary); color: #fff; background-image: none; }
+    .action-btn.danger { color: var(--loss); border-color: var(--loss); }
+    .action-btn.danger:hover { background-color: var(--loss); color: #fff; }
+    .action-btn.danger:active { background-color: var(--loss); color: #fff; }
+
+    /* Tabs */
+    .tab-nav { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .tab-btn { background: transparent; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 8px 20px; font-family: 'Josefin Sans', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; color: var(--muted); cursor: pointer; transition: color 0.15s, border-color 0.15s; height: auto; line-height: normal; width: auto; border-radius: 0; position: relative; z-index: 1; }
+    .tab-btn:hover { color: var(--text); background: transparent; }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; padding-top: 20px; }
+
+    /* Tracker */
+    .tracker-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0; margin-bottom: 10px; overflow: hidden; scroll-margin-top: var(--header-h, 160px); }
+    .tracker-card-header { display:flex; justify-content:space-between; align-items:center; gap:8px; cursor:pointer; padding:14px; user-select:none; transition:background 0.15s; }
+    .tracker-card-header:hover { background: var(--divider); }
+    .tracker-card.status-active { border-left: 3px solid var(--primary); }
+    .tracker-card.status-completed { border-left: 3px solid var(--gain); }
+    .tracker-card.status-archived { border-left: 3px solid var(--muted); }
+    .tracker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+    .tracker-title { font-family: 'Josefin Sans', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: var(--text); display: inline-block; }
+    .tracker-status { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; }
+    .tracker-status.active { color: var(--primary); border: 1px solid var(--primary); }
+    .tracker-status.completed { color: var(--gain); border: 1px solid var(--gain); }
+    .tracker-status.archived { color: var(--muted); border: 1px solid var(--muted); }
+    .tracker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media (max-width: 520px) { .tracker-grid { grid-template-columns: 1fr; } }
+    .tracker-field { display: flex; flex-direction: column; gap: 3px; }
+    .tracker-field label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0; opacity: 1; }
+    .tracker-field input, .tracker-field select { font-size: 12px; padding: 7px 9px; height: auto; }
+
+    .tracker-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+    .tracker-actions .action-btn { min-width: unset; font-size: 11px; height: 30px; line-height: 30px; padding: 0 12px; }
+    .tracker-stat { font-size: 12px; color: var(--muted); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--divider); display: flex; gap: 16px; flex-wrap: wrap; }
+    .tracker-stat span { display: flex; flex-direction: column; gap: 1px; }
+    .tracker-card-body { overflow:hidden; max-height:0; transition:max-height 0.3s ease-in-out; }
+    .tracker-card-body.open { max-height:4000px; transition:max-height 0.35s ease-in-out; }
+    .tc-chevron svg { transition:transform 0.25s ease; }
+    details summary::-webkit-details-marker { display: none; }
+    details summary { list-style: none; }
+    .tracker-stat strong { font-size: 13px; font-weight: 700; color: var(--text); }
+    .tracker-sub-header { display:none; transition:background 0.3s ease; }
+    .tracker-sub-header.visible { display:block; }
+    .tracker-sub-header-inner { max-width:min(92vw, 820px); margin:0 auto; padding:8px clamp(12px,3vw,24px); display:flex; align-items:center; justify-content:center; gap:16px; border-bottom:1px solid var(--border); }
+    .tracker-sub-header-inner #trackerSort { font-size:10px; padding:2px 28px 2px 10px; height:auto; min-width:0; max-width:240px; width:auto; border-radius:4px; }
+    #collapseAllPill { width:78px; text-align:center; box-sizing:border-box; flex-shrink:0; }
+    .sticky-header { transition:background 0.3s ease; }
+    .sticky-header-inner { display:flex; justify-content:space-between; align-items:center; padding:8px clamp(12px, 3vw, 24px) 12px; max-width: min(92vw, 820px); margin: 0 auto; box-sizing:content-box; }
+    .sticky-header .tab-nav { max-width: min(92vw, 820px); margin: 0 auto; padding: 0 clamp(12px, 3vw, 24px); }
+    .sticky-header-inner img { will-change:height; }
+    #headerWrapper { position:sticky; top:0; left:0; right:0; z-index:50; background:var(--bg); transition:background 0.3s ease; }
   </style>
 </head>
 <body>
-<div class="container">
 
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-    <a href="https://luce.finance" target="_blank" rel="noopener" style="display:flex; align-items:center; gap:0px; margin-left:-6px; text-decoration:none;">
-      <img src="https://hosting.renderforestsites.com/17779951/1250850/media/d8af0bc87b9336dde8ac231ebee762fd.png" alt="luce.finance" style="height:clamp(44px, 8vw, 80px); width:auto; display:block;">
-      <span style="font-family:'Cardo',serif; font-size:clamp(1rem, 3.5vw, 1.4rem); font-weight:400; color:var(--text); letter-spacing:0.02em; position:relative; top:4px; margin-left:clamp(-8px, -2vw, -16px);">luce.finance</span>
-    </a>
-    <button id="themeButton" onclick="toggleTheme()" onmouseover="this.style.background='var(--primary)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--primary)'" style="width:auto; height:32px; line-height:32px; padding:0 12px; margin:0; border-radius:8px; border:1px solid var(--primary); background:transparent; color:var(--primary); cursor:pointer; font-family:'Josefin Sans',sans-serif; font-size:clamp(10px, 2.5vw, 12px); font-weight:600; letter-spacing:0.04em; white-space:nowrap; transition:background 0.15s, color 0.15s;">Dark Mode</button>
+  <div id="headerWrapper">
+  <div class="sticky-header" id="stickyHeader">
+    <div class="sticky-header-inner">
+      <a href="https://luce.finance" target="_blank" rel="noopener" style="display:flex; align-items:center; gap:6px; text-decoration:none;">
+        <img src="https://hosting.renderforestsites.com/17779951/1250850/media/601f09b4bc5eb29f08f128259bbf5471.png" alt="luce.finance" id="stickyLogo" style="height:56px; width:auto; display:block;">
+        <span id="stickyText" style="font-family:'Cardo',serif; font-size:1rem; font-weight:400; color:var(--text); letter-spacing:0.02em; line-height:1; position:relative; top:2px;">luce.finance</span>
+      </a>
+      <button id="themeButton" onclick="toggleTheme()" onmouseover="this.style.background='var(--primary)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--primary)'" style="width:auto; height:32px; line-height:32px; padding:0 12px; margin:0; border-radius:8px; border:1px solid var(--primary); background:transparent; color:var(--primary); cursor:pointer; font-family:'Josefin Sans',sans-serif; font-size:clamp(10px, 2.5vw, 12px); font-weight:600; letter-spacing:0.04em; white-space:nowrap; transition:background 0.15s, color 0.15s;">Dark Mode</button>
+    </div>
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="window.scrollTo({top:0, behavior: this.classList.contains('active') ? 'smooth' : 'instant'}); switchTab('calculator', this);">Calculator</button>
+      <button class="tab-btn" onclick="window.scrollTo({top:0, behavior: this.classList.contains('active') ? 'smooth' : 'instant'}); switchTab('tracker', this);">My Cycles</button>
+    </div>
+  </div>
+  <div class="tracker-sub-header" id="trackerSubHeader">
+    <div class="tracker-sub-header-inner">
+      <select id="trackerSort" onchange="renderTracker()">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+        <option value="dgb_high">DGB Locked (High → Low)</option>
+        <option value="dgb_low">DGB Locked (Low → High)</option>
+        <option value="unlock_soon">Unlocking Soonest</option>
+        <option value="unlock_late">Unlocking Latest</option>
+      </select>
+      <a href="javascript:void(0)" id="collapseAllPill" class="live-pill" onclick="toggleCollapseAll(this)">Collapse All</a>
+    </div>
+  </div>
   </div>
 
-  <!-- Header -->
+<div class="container" id="mainContainer">
 
+  <!-- Calculator Tab -->
+  <div class="tab-pane active" id="tab-calculator">
+
+  <!-- Header -->
   <h2>DigiDollar Compounding Calculator</h2>
   <p class="section-note">
     Lock $DGB &rarr; Mint $DD &rarr; Buy More $DGB &rarr; Unlock at Higher Price &rarr; Net More $DGB.<br>
@@ -171,7 +259,7 @@
 
   <div style="text-align:center; margin-bottom:12px;">
     <div class="privacy-note">
-      <strong>Runs entirely in your browser.</strong> No data is ever sent to a server &mdash; your wallet values stay private.
+      <strong>Self-custodial by design.</strong> Your inputs never leave your browser. No servers, no tracking, no data collected.
     </div>
   </div>
 
@@ -181,38 +269,26 @@
     <div class="input-row">
       <div>
         <label for="startDGB">Starting DGB</label>
-        <div class="spinner-wrap">
-          <input type="text" id="startDGB" value="1,000,000" inputmode="numeric" autocomplete="off">
-          <div class="spinner-btns">
-            <button type="button" class="spinner-btn" data-action="dgbUp">&#9650;</button>
-            <button type="button" class="spinner-btn" data-action="dgbDown">&#9660;</button>
-          </div>
-        </div>
+        <input type="text" id="startDGB" value="1,000,000" inputmode="numeric" autocomplete="off">
       </div>
       <div>
         <label for="mintRate">Mint Rate / Lock Period</label>
         <select id="mintRate" onchange="updateMintHint()">
-          <option value="20">20% / 30-Day Lock</option>
-          <option value="25" selected>25% / 3-Month Lock</option>
-          <option value="28.6">28.6% / 6-Month Lock</option>
-          <option value="33.3">33.3% / 1-Year Lock</option>
-          <option value="36.4">36.4% / 2-Year Lock</option>
-          <option value="40">40% / 3-Year Lock</option>
-          <option value="44.4">44.4% / 5-Year Lock</option>
-          <option value="47.2">47.2% / 7-Year Lock</option>
-          <option value="50">50% / 10-Year Lock</option>
+          <option value="20">20% / 30 Days</option>
+          <option value="25" selected>25% / 3 Months</option>
+          <option value="28.6">28.6% / 6 Months</option>
+          <option value="33.3">33.3% / 1 Year</option>
+          <option value="36.4">36.4% / 2 Years</option>
+          <option value="40">40% / 3 Years</option>
+          <option value="44.4">44.4% / 5 Years</option>
+          <option value="47.2">47.2% / 7 Years</option>
+          <option value="50">50% / 10 Years</option>
         </select>
         <div class="hint" id="mintHint">400% Collateralization Ratio</div>
       </div>
       <div>
         <label for="totalCycles">Total Cycles</label>
-        <div class="spinner-wrap">
-          <input type="number" id="totalCycles" value="1" min="1" max="240" step="1">
-          <div class="spinner-btns">
-            <button type="button" class="spinner-btn" data-action="cycleUp">&#9650;</button>
-            <button type="button" class="spinner-btn" data-action="cycleDown">&#9660;</button>
-          </div>
-        </div>
+        <input type="text" inputmode="numeric" id="totalCycles" value="1">
         <div class="hint" id="cycleHint">Max 40 Over 10 Years</div>
       </div>
       <div>
@@ -226,43 +302,23 @@
     <div class="model-row">
       <div>
         <label for="modelStart">Start Price ($)</label>
-        <div class="spinner-wrap">
-          <input type="text" id="modelStart" value="0.004" inputmode="decimal">
-          <div class="spinner-btns">
-            <button type="button" class="spinner-btn" data-action="msUp">&#9650;</button>
-            <button type="button" class="spinner-btn" data-action="msDown">&#9660;</button>
-          </div>
-        </div>
+        <input type="text" id="modelStart" value="0.004" inputmode="decimal">
         <div class="hint" id="fdvStart" style="display:flex; align-items:center; gap:4px;"><span id="fdvStartText">FDV: $84.0M</span><span id="fdvLive"></span></div>
       </div>
       <div>
         <label for="modelEnd">End Price ($)</label>
-        <div class="spinner-wrap">
-          <input type="text" id="modelEnd" value="0.35" inputmode="decimal">
-          <div class="spinner-btns">
-            <button type="button" class="spinner-btn" data-action="meUp">&#9650;</button>
-            <button type="button" class="spinner-btn" data-action="meDown">&#9660;</button>
-          </div>
-        </div>
+        <input type="text" id="modelEnd" value="0.35" inputmode="decimal">
         <div class="hint" style="display:flex; align-items:center; gap:4px;"><span id="fdvEnd">FDV: $7.35B</span></div>
       </div>
-    </div>
-    <div style="margin-top:12px;">
-      <div class="slippage-wrap">
-      <label for="slippageInput">Slippage (%)</label>
-      <div class="spinner-wrap">
+      <div>
+        <label for="slippageInput">Slippage (%)</label>
         <input type="text" id="slippageInput" value="0.5" inputmode="decimal">
-        <div class="spinner-btns">
-          <button type="button" class="spinner-btn" data-action="slipUp">&#9650;</button>
-          <button type="button" class="spinner-btn" data-action="slipDown">&#9660;</button>
+        <div class="hint" style="display:flex; align-items:center; gap:6px; flex-wrap:nowrap;">
+          <span style="white-space:nowrap;">Applied to All Trades</span>
+          <input type="checkbox" id="slippageToggle" onchange="toggleSlippage()" checked style="display:none;">
+          <a href="javascript:void(0)" id="slippageBtn" class="live-pill" onclick="document.getElementById('slippageToggle').click()" style="display:inline-block; text-align:center; width:60px; flex-shrink:0;">Enabled</a>
         </div>
       </div>
-      <div class="hint" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-        Applied to Both Buy and Sell Trades
-        <input type="checkbox" id="slippageToggle" onchange="toggleSlippage()" checked style="display:none;">
-        <a href="javascript:void(0)" id="slippageBtn" class="live-pill" onclick="document.getElementById('slippageToggle').click()" style="display:inline-block; text-align:center; width:60px;">Enabled</a>
-      </div>
-    </div>
     </div>
   </div>
 
@@ -275,10 +331,6 @@
   <div class="box">
     <h3>Summary</h3>
     <div class="metrics-grid" id="metrics"></div>
-    <div class="action-row">
-      <button class="action-btn" onclick="copyShareLink(this)">Link</button>
-      <button class="action-btn" onclick="copyResults(this)">Export</button>
-    </div>
   </div>
 
   <!-- Chart -->
@@ -313,18 +365,18 @@
       <table id="cycleTable">
         <thead>
           <tr>
-            <th>Cycle</th>
+            <th>#</th>
             <th>Locked</th>
-            <th>DD Mint</th>
-            <th>Buy $</th>
+            <th>Mint</th>
+            <th>Buy</th>
             <th class="eff-col">Eff. Buy</th>
             <th>Bought</th>
-            <th>Sell $</th>
+            <th>Sell</th>
             <th class="eff-col">Eff. Sell</th>
             <th>Sold</th>
             <th>DD Loss</th>
             <th>DGB Gain</th>
-            <th>Net DGB</th>
+            <th>Net</th>
             <th>Value</th>
           </tr>
         </thead>
@@ -333,17 +385,66 @@
     </div>
   </div>
 
+  <div class="box">
+    <h3>Save &amp; Share</h3>
+    <p class="section-note" style="margin-bottom:12px;">Generate a link to save your calculator state and restore it on any device.</p>
+    <div class="tracker-share-btns">
+      <div class="tracker-share-btns-row">
+        <button class="action-btn" onclick="copyShareLink(this)">Save Link</button>
+        <button class="action-btn" onclick="copyResults(this)">Export</button>
+      </div>
+      <div class="tracker-share-btns-row">
+        <button class="action-btn danger" onclick="resetCalculator(this)">Reset</button>
+      </div>
+    </div>
+  </div>
+
   <p class="note">
     This calculator simulates outcomes based on user-defined price assumptions. Cryptocurrency markets are unpredictable &mdash; actual results will vary. Not financial advice.
   </p>
 
-  <p class="note" style="margin-top: 12px; font-size: 11px;">
-    Find this calculator useful? Tips appreciated &mdash;<br>
-    <span style="font-family:'Montserrat',sans-serif; letter-spacing:0.02em; color:var(--text); font-size:11px; word-break:break-all;">dgb1qut6s660nsj2xagjnr4cqmyqrd8f9z5s9pxqc60</span>
-    <a href="javascript:void(0)" class="live-pill" style="margin-left:6px; width:90px; text-align:center; display:inline-block; transition: background 0.15s, color 0.15s;" onmouseover="this.style.background='var(--primary)';this.style.color='#fff';this.style.borderColor='var(--primary)'" onmouseout="this.style.background='transparent';this.style.color='var(--primary)';this.style.borderColor=''" onmousedown="event.preventDefault(); navigator.clipboard.writeText('dgb1qut6s660nsj2xagjnr4cqmyqrd8f9z5s9pxqc60').then(() => { const el = event.target; const orig = el.textContent; el.dataset.orig = el.dataset.orig || orig; clearTimeout(el._copyTimer); el.textContent = 'Copied!'; el._copyTimer = setTimeout(() => { el.textContent = el.dataset.orig; }, 1500); });">Copy Address</a>
+  <p id="tipAddress" class="note" style="margin-top: 12px; font-size: 11px;"></p>
+  <!-- tip rendered by renderTipAddress() -->
+
+  </div><!-- end tab-calculator -->
+
+  <!-- Tracker Tab -->
+  <div class="tab-pane" id="tab-tracker">
+    <h2>My DigiDollar Cycles</h2>
+    <p class="section-note">Log your real cycles as they happen — track locked DGB, mint details, buys, sells, and actual returns over time.</p>
+
+  <div style="text-align:center; margin-bottom:12px;">
+    <div class="privacy-note">
+      <strong>Self-custodial by design.</strong> Your cycle data stays on your device. No servers. No accounts. No tracking.
+    </div>
+  </div>
+
+    <div class="box">
+      <div id="trackerList"></div>
+    </div>
+
+    <div class="box">
+      <h3>Save &amp; Share</h3>
+      <p class="section-note" style="margin-bottom:12px;">Generate a link to save your cycles and restore them on any device. Anyone with the link can view your cycles.</p>
+      <div class="tracker-share-btns">
+        <div class="tracker-share-btns-row">
+          <button class="action-btn" onclick="saveTrackerUrl(this)">Save Link</button>
+          <button class="action-btn" onclick="exportTracker(this)">Export</button>
+        </div>
+        <div class="tracker-share-btns-row">
+          <button class="action-btn danger" id="clearLocalBtn" onclick="confirmClearStorage(this)">Clear Local Data</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="note">
+    Cycle data is for personal tracking only. Cryptocurrency markets are unpredictable &mdash; actual results will vary. Not financial advice.
   </p>
 
-</div>
+  <p id="tipAddress2" class="note" style="margin-top: 12px; font-size: 11px;"></p>
+  </div><!-- end tab-tracker -->
+
+</div><!-- end container -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -351,7 +452,20 @@ const fmt = n => Math.round(n).toLocaleString();
 const fmtD = n => { const abs = Math.abs(n), sign = n < 0 ? '-' : ''; return abs >= 1e12 ? sign + '$' + (abs/1e12).toFixed(2) + 'T' : abs >= 1e9 ? sign + '$' + (abs/1e9).toFixed(2) + 'B' : abs >= 1e6 ? sign + '$' + (abs/1e6).toFixed(2) + 'M' : abs >= 1000 ? sign + '$' + (abs/1000).toFixed(1) + 'K' : sign + '$' + abs.toFixed(2); };
 const fmtP = n => '$' + parseFloat(n).toFixed(4);
 const fmtN = n => { const abs = Math.abs(n), sign = n < 0 ? '-' : ''; return abs >= 1e9 ? sign + (abs/1e9).toFixed(2) + 'B' : abs >= 1e6 ? sign + (abs/1e6).toFixed(2) + 'M' : abs >= 1000 ? sign + (abs/1000).toFixed(1) + 'K' : sign + Math.round(abs).toLocaleString(); };
+const fmtDD = (v) => { const n = parseFloat((v||'').toString().replace(/,/g,'')); if (!n && n !== 0) return ''; const parts = n.toString().split('.'); const dec = parts[1] ? '.' + parts[1].slice(0,2) : ''; return Math.floor(n).toLocaleString() + dec; };
 const el = id => document.getElementById(id);
+
+// Price formatter: commas + magnitude-aware decimal places
+// <$1: 6dp, $1-$9.99: 4dp, $10-$99.99: 3dp, $100+: 2dp
+function fmtPrice(n) {
+  if (!n || n <= 0) return '';
+  const abs = Math.abs(n);
+  const dp = abs < 10 ? 4 : abs < 100 ? 3 : 2;
+  // Use toLocaleString for commas, then fix decimal places
+  const parts = abs.toFixed(dp).split('.');
+  parts[0] = parseInt(parts[0]).toLocaleString();
+  return '$' + parts[0] + (parts[1] ? '.' + parts[1] : '');
+}
 
 const MINT_HINTS = {
   '20':'500% Collateralization Ratio','25':'400% Collateralization Ratio',
@@ -381,7 +495,13 @@ function updateMintHint() {
     el('cycleHint').textContent = mc.label;
   }
   isCustom = false;
-  updateIndicator();
+  rebuildAndSimulate();
+}
+
+const PRICE_MAX = 999.9999;
+const PRICE_MIN = 0.0001;
+
+function rebuildAndSimulate() {
   const g = getG();
   buildPrices(g.n);
   buildGrid(g.n);
@@ -401,7 +521,7 @@ function toggleSlippage() {
   if (btn) btn.textContent = enabled ? 'Enabled' : 'Disabled';
   const t = el('cycleTable');
   if (t) enabled ? t.classList.remove('slippage-hidden') : t.classList.add('slippage-hidden');
-  isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  simulate();
 }
 
 function getG() {
@@ -450,15 +570,13 @@ function resetCycle(i) {
     if (resetBtn) resetBtn.style.visibility = 'hidden';
   }
   isCustom = cyclePrices.some(c => c.custom);
-  updateIndicator();
   simulate();
 }
 
 function resetToModel(model, btn) {
   el('priceModel').value = model;
   isCustom = false;
-  updateIndicator();
-  const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  rebuildAndSimulate();
   if (btn) { const orig = btn.dataset.orig || btn.textContent; btn.dataset.orig = orig; clearTimeout(btn._resetTimer); btn.textContent = 'Reset!'; btn._resetTimer = setTimeout(() => { btn.textContent = orig; }, 1500); }
 }
 
@@ -469,7 +587,7 @@ function buildGrid(n) {
     const cp = cyclePrices[i] || { buy: 0.001, sell: 0.002, custom: false };
     const pctVal = cp.buy > 0 ? ((cp.sell - cp.buy) / cp.buy * 100) : 0;
     const pctColor = pctVal > 0 ? 'var(--gain)' : pctVal < 0 ? 'var(--loss)' : 'var(--muted)';
-    const gainPct = `<span style="color:${pctColor}">${(pctVal >= 0 ? '+' : '') + pctVal.toFixed(1)}%<br>${pctVal > 0 ? 'Value Gained' : pctVal < 0 ? 'Value Lost' : 'Value Gained'}</span>`;
+    const gainPct = `<span style="color:${pctColor}">${pctVal > 0 ? '+' : ''}${pctVal.toFixed(1)}% Price</span>`;
 
     const cell = document.createElement('div');
     cell.className = 'cycle-cell' + (cp.custom ? ' custom-edited' : '');
@@ -477,7 +595,7 @@ function buildGrid(n) {
     cell.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
         <div class="cycle-num-label" style="margin-bottom:0;">Cycle ${i + 1}</div>
-        <a href="javascript:void(0)" data-reset="${i}" style="font-size:14px; color:var(--muted); text-decoration:none; font-weight:600; visibility:${cp.custom ? 'visible' : 'hidden'}; padding:4px; margin:-4px; line-height:1;" onmousedown="event.preventDefault(); resetCycle(${i})">↺</a>
+        <a href="javascript:void(0)" data-reset="${i}" class="live-pill" style="font-size:9px; visibility:${cp.custom ? 'visible' : 'hidden'}; padding:2px 6px;" onmousedown="event.preventDefault(); resetCycle(${i})">Reset</a>
       </div>
       <div class="price-row">
         <span class="plabel">Buy</span>
@@ -497,6 +615,14 @@ function buildGrid(n) {
     inp.addEventListener('keydown', e => priceKeydown(e, inp, 0.0001));
     inp.addEventListener('input', () => {
       const i = +inp.dataset.i, t = inp.dataset.t;
+      // Strip leading zeros (007 → 7, 007.04 → 7.04, 0.04 stays 0.04)
+      const beforeStrip = inp.value;
+      inp.value = inp.value.replace(/^0+(\d)/, '$1');
+      if (inp.value !== beforeStrip) {
+        const diff = beforeStrip.length - inp.value.length;
+        const pos = Math.max(0, inp.selectionStart - diff);
+        inp.setSelectionRange(pos, pos);
+      }
       let v = parseFloat(inp.value);
       if (!isNaN(v) && v > 0) {
         if (v > PRICE_MAX) { v = PRICE_MAX; inp.value = v.toFixed(4); }
@@ -511,7 +637,6 @@ function buildGrid(n) {
         const resetBtn = el('cell' + i).querySelector('[data-reset]');
         if (resetBtn) resetBtn.style.visibility = stillCustom ? 'visible' : 'hidden';
         isCustom = cyclePrices.some(c => c.custom);
-        updateIndicator();
         simulate();
       }
     });
@@ -563,13 +688,13 @@ function simulate() {
     const pricePct = cp.buy > 0 ? ((cp.sell - cp.buy) / cp.buy * 100) : 0;
     const pricePctColor = pricePct > 0 ? 'var(--gain)' : pricePct < 0 ? 'var(--loss)' : 'var(--muted)';
     const beEl = el('be' + i);
-    if (beEl) beEl.innerHTML = `<span style="color:${pricePctColor}">${(pricePct > 0 ? '+' : '') + pricePct.toFixed(1)}%<br>${pricePct > 0 ? 'Value Gained' : pricePct < 0 ? 'Value Lost' : 'Value Gained'}</span>`;
+    if (beEl) beEl.innerHTML = pricePct !== 0 ? `<span style="color:${pricePctColor}">${pricePct > 0 ? '+' : ''}${pricePct.toFixed(1)}% Price</span>` : `<span style="color:var(--muted)">Flat</span>`;
 
     const badge = el('cb' + i);
     if (badge) {
-      if (profitable) { badge.className = 'cbadge pos'; badge.innerHTML = '+' + fmt(Math.round(gain)) + '<br>DGB Gained'; }
+      if (profitable) { badge.className = 'cbadge pos'; badge.innerHTML = fmt(Math.round(gain)) + '<br>DGB Gained'; }
       else if (sp === bp) { badge.className = 'cbadge flat'; badge.innerHTML = '0<br>DGB Gained'; }
-      else { const ddRecovered = sold * sp; const ddShortfall = Math.max(0, dd - ddRecovered); badge.className = 'cbadge locked'; badge.innerHTML = '+' + fmtD(ddShortfall) + ' DD<br>to Unlock'; }
+      else { const ddRecovered = sold * sp; const ddShortfall = Math.max(0, dd - ddRecovered); badge.className = 'cbadge locked'; badge.innerHTML = fmtD(ddShortfall) + ' DD<br>to Unlock'; }
     }
   }
   lastRows = rows;
@@ -579,10 +704,15 @@ function simulate() {
   const lossCount = n - profCount - flatCount;
   if (profCount === 0 && flatCount === 0) {
     warnBox.style.display = 'inline-block';
-    warnBox.textContent = '⚠ No profitable cycles — all sell prices are below buy prices. Adjust prices so at least one sell exceeds its buy.';
+    const slipOn = el('slippageToggle').checked;
+    warnBox.textContent = slipOn
+      ? '⚠ No profitable cycles — effective sell prices do not exceed buy prices. Try raising sell prices or reducing slippage.'
+      : '⚠ No profitable cycles — sell prices do not exceed buy prices. Try raising sell prices.';
   } else if (profCount < n / 2 && lossCount > 0) {
     warnBox.style.display = 'inline-block';
-    warnBox.textContent = `⚠ Only ${profCount} of ${n} cycles are profitable. Consider adjusting sell prices above buy prices for more cycles.`;
+    warnBox.textContent = slipOn
+      ? `⚠ Only ${profCount} of ${n} cycles are profitable. Consider raising sell prices or reducing slippage.`
+      : `⚠ Only ${profCount} of ${n} cycles are profitable. Consider raising sell prices.`;
   } else {
     warnBox.style.display = 'none';
   }
@@ -592,7 +722,7 @@ function simulate() {
 
   el('metrics').innerHTML = `
     <div class="metric-card"><div class="metric-label">Final<br>DGB</div><div class="metric-value">${fmtN(dgb)}</div><div class="metric-sub">From ${fmtN(g.startDGB)}</div></div>
-    <div class="metric-card"><div class="metric-label">DGB<br>Gained</div><div class="metric-value">+${fmtN(dgb - g.startDGB)}</div><div class="metric-sub">${((dgb - g.startDGB) / g.startDGB * 100).toFixed(1)}% Increase</div></div>
+    <div class="metric-card"><div class="metric-label">DGB<br>Gained</div><div class="metric-value">${fmtN(dgb - g.startDGB)}</div><div class="metric-sub">${((dgb - g.startDGB) / g.startDGB * 100).toFixed(1)}% Increase</div></div>
     <div class="metric-card"><div class="metric-label">Final<br>Value</div><div class="metric-value">${fmtD(finalVal)}</div><div class="metric-sub">From ${fmtD(initVal)}</div></div>
     <div class="metric-card"><div class="metric-label">Value<br>Multiplier</div><div class="metric-value">${(finalVal / Math.max(initVal, 0.01)).toFixed(1)}x</div><div class="metric-sub">Over ${n} Cycles</div></div>
     <div class="metric-card"><div class="metric-label">Profitable<br>Cycles</div><div class="metric-value">${profCount} / ${n}</div><div class="metric-sub">${[lossCount > 0 ? lossCount + ' Loss' : '', flatCount > 0 ? flatCount + ' Flat' : ''].filter(Boolean).join(' · ') || 'All Profitable'}</div></div>
@@ -637,29 +767,28 @@ function simulate() {
   }
 
   el('tbody').innerHTML = rows.map(r => {
-    const isLoss = !r.profitable && r.sp !== r.bp;
-    const c = (col) => col ? `color:${col};` : '';
+    const ddLoss = r.dd - r.sold * r.sp;
     return `<tr>
-    <td style="${c()}">${r.c}</td>
-    <td style="${c('var(--warn)')}">${fmt(r.locked)}</td>
-    <td style="${c()}">${fmtD(r.dd)}</td>
-    <td style="${c('var(--gain)')}">${fmtP(r.buyRaw)}</td>
-    <td class="eff-col" style="${c(r.bp !== r.buyRaw ? 'var(--warn)' : null)}">${r.bp !== r.buyRaw ? fmtP(r.bp) : '—'}</td>
-    <td style="${c()}">${fmt(r.bought)}</td>
-    <td style="${c('var(--loss)')}">${fmtP(r.sellRaw)}</td>
-    <td class="eff-col" style="${c(r.sp !== r.sellRaw ? 'var(--warn)' : null)}">${r.sp !== r.sellRaw ? fmtP(r.sp) : '—'}</td>
-    <td style="${c()}">${fmt(r.sold)}</td>
-    <td style="${r.dd - r.sold * r.sp > 0.001 ? 'color:var(--loss);' : ''}">${r.dd - r.sold * r.sp > 0.001 ? fmtD(r.dd - r.sold * r.sp) : '$0'}</td>
-    <td style="${r.profitable ? 'color:#3b82f6;' : c()}">${r.profitable ? '+' + fmt(r.gain) : '0'}</td>
-    <td style="${c()}">${fmt(r.net)}</td>
-    <td style="${c('var(--gain)')}">${fmtD(r.net * r.sp)}</td>
+    <td>${r.c}</td>
+    <td style="color:var(--warn);">${fmtN(r.locked)}</td>
+    <td>${fmtD(r.dd)}</td>
+    <td style="color:var(--gain);">${fmtP(r.buyRaw)}</td>
+    <td class="eff-col"${r.bp !== r.buyRaw ? ' style="color:var(--warn);"' : ''}>${r.bp !== r.buyRaw ? fmtP(r.bp) : '—'}</td>
+    <td>${fmtN(r.bought)}</td>
+    <td style="color:var(--loss);">${fmtP(r.sellRaw)}</td>
+    <td class="eff-col"${r.sp !== r.sellRaw ? ' style="color:var(--warn);"' : ''}>${r.sp !== r.sellRaw ? fmtP(r.sp) : '—'}</td>
+    <td>${fmtN(r.sold)}</td>
+    <td${ddLoss > 0.001 ? ' style="color:var(--loss);"' : ''}>${ddLoss > 0.001 ? fmtD(ddLoss) : '$0'}</td>
+    <td${r.profitable ? ' style="color:#3b82f6;"' : ''}>${r.profitable ? fmtN(r.gain) : '0'}</td>
+    <td>${fmtN(r.net)}</td>
+    <td style="color:var(--gain);">${fmtD(r.net * r.sp)}</td>
   </tr>`;
   }).join('') +
   `<tr class="total-row">
     <td colspan="${g.slippage > 0 ? 9 : 7}">Total After ${n} ${n === 1 ? 'Cycle' : 'Cycles'}</td>
     <td style="${rows.some(r => r.dd - r.sold * r.sp > 0.001) ? 'color:var(--loss);' : ''}">${(() => { const excess = rows.reduce((s,r) => s + Math.max(0, r.dd - r.sold * r.sp), 0); return excess > 0.001 ? fmtD(excess) : '$0'; })()}</td>
-    <td style="color:#3b82f6;">+${fmt(dgb - g.startDGB)}</td>
-    <td>${fmt(dgb)}</td>
+    <td style="color:#3b82f6;">${fmtN(dgb - g.startDGB)}</td>
+    <td>${fmtN(dgb)}</td>
     <td style="color:var(--gain);">${fmtD(dgb * (cyclePrices[n-1]?.sell || g.pEnd))}</td>
   </tr>`;
 }
@@ -674,10 +803,32 @@ function matchesModel(model) {
   return true;
 }
 
-function updateIndicator() {}
+function resetCalculator(btn) {
+  el('startDGB').value = '1,000,000';
+  el('mintRate').value = '25';
+  el('totalCycles').value = '1';
+  el('priceModel').value = 'linear';
+  // Use live price if available, same as fresh page load
+  if (window._livePrice) {
+    el('modelStart').value = window._livePrice;
+    el('modelEnd').value = Math.min(PRICE_MAX, +(window._livePrice * 10).toFixed(4));
+  } else {
+    el('modelStart').value = '0.004';
+    el('modelEnd').value = '0.35';
+  }
+  el('slippageInput').value = '0.5';
+  el('slippageToggle').checked = true;
+  isCustom = false;
+  cyclePrices = [];
+  toggleSlippage();
+  updateMintHint();
+  if (btn) flashBtn(btn, 'Reset!', 'Reset');
+}
 
 function copyShareLink(btn) {
+  flushAllCyclesToData();
   const g = getG();
+  // Calculator state
   const params = new URLSearchParams({
     s: g.startDGB, m: el('mintRate').value, n: g.n,
     ps: g.pStart, pe: g.pEnd, pm: g.model,
@@ -686,7 +837,21 @@ function copyShareLink(btn) {
     slipv: el('slippageInput').value,
     cp: cyclePrices.map(c => c.buy + ',' + c.sell).join(';')
   });
-  const url = location.href.split('?')[0] + '?' + params.toString();
+  // Tracker state
+  // Save active tab
+  const activeTab = document.querySelector('.tab-pane.active');
+  if (activeTab && activeTab.id === 'tab-tracker') params.set('tab', 'tracker');
+  if (trackerCycles.length > 0) {
+    const compressed = compressCycles(trackerCycles);
+    const encoded = btoa(encodeURIComponent(JSON.stringify(compressed)));
+    params.set('tracker', encoded);
+    const validIds = new Set(trackerCycles.map(c => c.id));
+    const openIds = [...(window._openCards || [])].filter(id => validIds.has(id));
+    params.set('open', openIds.join(','));
+    const sortVal = (document.getElementById('trackerSort') || {}).value;
+    if (sortVal && sortVal !== 'newest') params.set('sort', sortVal);
+  }
+  const url = location.origin + location.pathname + '?' + params.toString();
   navigator.clipboard.writeText(url).then(() => flashBtn(btn, 'Copied!', 'Link'));
 }
 
@@ -701,36 +866,48 @@ function copyResults(btn) {
   const lossCount = rows.filter(r => !r.profitable && r.sp !== r.bp).length;
   const lockLabel = el('mintRate').options[el('mintRate').selectedIndex].text;
   const cycleStats = [profCount + ' Profitable', lossCount > 0 ? lossCount + ' Loss' : '', flatCount > 0 ? flatCount + ' Flat' : ''].filter(Boolean).join(', ');
-  let txt = `DigiDollar Compounding Calculator Results\n`;
-  txt += `==========================================\n`;
-  txt += `Starting DGB: ${fmt(g.startDGB)}\n`;
-  txt += `Lock Period: ${lockLabel}\n`;
-  txt += `Total Cycles: ${g.n} (${cycleStats})\n`;
   const modelLabel = el('priceModel').value.charAt(0).toUpperCase() + el('priceModel').value.slice(1);
+  const SEP = '------------------------------------------';
+  let txt = 'DigiDollar Compounding Calculator\n';
+  txt += '==========================================\n';
+  txt += `DGB Locked: ${fmt(g.startDGB)}\n`;
+  txt += `Mint Rate: ${lockLabel}\n`;
   txt += `Price Model: ${isCustom ? 'Custom' : modelLabel}\n`;
-  txt += `Slippage: ${g.slippage > 0 ? (g.slippage * 100).toFixed(1) + '%' : 'Disabled'}\n`;
-  txt += `Price Range: $${g.pStart} → $${g.pEnd}\n\n`;
-  rows.forEach(r => {
-    const isLoss = !r.profitable && r.sp !== r.bp;
+  txt += `Price Range: ${fmtPrice(g.pStart)} → ${fmtPrice(g.pEnd)}\n`;
+  txt += `Slippage: ${g.slippage > 0 ? (g.slippage * 100).toFixed(1) + '%' : 'Off'}\n`;
+  txt += `Cycles: ${g.n} (${cycleStats})\n`;
+  txt += SEP + '\n';
+  // Pre-compute columns for alignment
+  const rowData = rows.map(r => {
     const isFlat = r.sp === r.bp;
+    const isLoss = !r.profitable && !isFlat;
     const ddShortfall = isLoss ? Math.max(0, r.dd - r.sold * r.sp) : 0;
-    const cycleVal = fmtD(r.net * r.sp);
-    let status = r.profitable ? '+' + fmt(r.gain) + ' DGB Gained' : isFlat ? 'Flat' : '+' + fmtD(ddShortfall) + ' DD to Unlock';
     const effBuyDiffers = Math.abs(r.bp - r.buyRaw) > 0.000001;
     const effSellDiffers = Math.abs(r.sp - r.sellRaw) > 0.000001;
-    const slipNote = g.slippage > 0 && (effBuyDiffers || effSellDiffers)
-      ? ` (Eff. Buy $${fmtP(r.bp).slice(1)} / Eff. Sell $${fmtP(r.sp).slice(1)})` : '';
-    txt += `Cycle ${r.c}: Buy $${fmtP(r.buyRaw).slice(1)} → Sell $${fmtP(r.sellRaw).slice(1)}${slipNote} | ${status} | Value: ${cycleVal}\n`;
+    const effNote = g.slippage > 0 && (effBuyDiffers || effSellDiffers)
+      ? ` → Eff. ${fmtPrice(r.bp)} / ${fmtPrice(r.sp)}` : '';
+    const prices = `${fmtPrice(r.buyRaw)} → ${fmtPrice(r.sellRaw)}${effNote}`;
+    const result = r.profitable ? `+${fmt(r.gain)} DGB` : isFlat ? 'Flat' : `${fmtD(ddShortfall)} DD to Unlock`;
+    const val = fmtD(r.net * r.sp);
+    return { c: r.c, prices, result, val };
+  });
+  const w1 = Math.max(...rowData.map(r => r.prices.length));
+  const w2 = Math.max(...rowData.map(r => r.result.length));
+  rowData.forEach(r => {
+    txt += `#${r.c} ${r.prices} | ${r.result} | ${r.val}\n`;
   });
   const totalDDLoss = rows.reduce((s, r) => s + Math.max(0, r.dd - r.sold * r.sp), 0);
-  txt += `\nStarting DGB:   ${fmt(g.startDGB)}\n`;
-  txt += `Final DGB:      ${fmt(finalDGB)}\n`;
-  txt += `DGB Gained:     +${fmt(finalDGB - g.startDGB)}\n`;
-  if (totalDDLoss > 0.001) txt += `DD to Unlock:   ${fmtD(totalDDLoss)}\n`;
-  txt += `\nEntry Value:    ${fmtD(initVal)}\n`;
-  txt += `Final Value:    ${fmtD(finalVal)}\n`;
-  txt += `Value x:        ${(finalVal / Math.max(initVal, 0.01)).toFixed(1)}x\n`;
-  txt += `\ndd.luce.finance`;
+  txt += SEP + '\n';
+  const netDgb = finalDGB - g.startDGB;
+  const netPct = g.startDGB > 0 ? ((netDgb / g.startDGB) * 100).toFixed(1) : '0.0';
+  txt += `DGB Locked: ${fmt(g.startDGB)} (${fmtD(initVal)})\n`;
+  txt += `DGB at End: ${fmt(finalDGB)} (${fmtD(finalVal)})\n`;
+  if (netDgb >= 0) txt += `DGB Gained: ${fmt(netDgb)} (+${netPct}%)\n`;
+  else txt += `DGB Lost: ${fmt(Math.abs(netDgb))} (${netPct}%)\n`;
+  if (totalDDLoss > 0.001) txt += `DD to Unlock: ${fmtD(totalDDLoss)}\n`;
+  txt += '==========================================\n';
+  txt += 'DigiDollar Compounding Calculator — dd.luce.finance';
+  txt += '\nFind this tool useful? DGB tips are always appreciated — ' + TIP_ADDR;
   navigator.clipboard.writeText(txt).then(() => flashBtn(btn, 'Copied!', 'Export'));
 }
 
@@ -772,7 +949,6 @@ function loadFromParams() {
     if (isCustom) {
       if (matchesModel('linear') || matchesModel('exponential')) isCustom = false;
     }
-    updateIndicator();
     buildGrid(cyclePrices.length);
   } else {
     buildPrices(+p.get('n')); buildGrid(+p.get('n'));
@@ -816,21 +992,21 @@ el('slippageInput').addEventListener('input', () => {
   if (dot !== -1 && el('slippageInput').value.length - dot - 1 > 1) {
     el('slippageInput').value = parseFloat(el('slippageInput').value).toFixed(1);
   }
-  isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  simulate();
 });
 el('slippageInput').addEventListener('blur', () => {
   const v = parseFloat(el('slippageInput').value);
   if (isNaN(v) || v < 0.1) el('slippageInput').value = '0.1';
   else if (v > 5) el('slippageInput').value = '5';
   else el('slippageInput').value = parseFloat(el('slippageInput').value).toFixed(1);
-  if (el('slippageToggle').checked) { isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate(); }
+  if (el('slippageToggle').checked) { simulate(); }
 });
 el('slippageInput').addEventListener('paste', e => {
   e.preventDefault();
   const val = parseFloat((e.clipboardData || window.clipboardData).getData('text'));
   if (isNaN(val) || val < 0.1 || val > 5) return;
   el('slippageInput').value = +val.toFixed(1);
-  if (el('slippageToggle').checked) { isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate(); }
+  if (el('slippageToggle').checked) { simulate(); }
 });
 
 function stepSlippage(dir) {
@@ -838,14 +1014,16 @@ function stepSlippage(dir) {
   const v = parseFloat(el('slippageInput').value) || 0.5;
   const next = Math.min(5, Math.max(0.1, +(v + dir).toFixed(1)));
   el('slippageInput').value = next;
-  isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  simulate();
 }
 
+let _stepCyclesTimer;
 function stepCycles(dir) {
   const v = Math.round(+el('totalCycles').value || 1);
-  const next = Math.min(240, Math.max(1, v + dir));
+  const next = Math.min(120, Math.max(1, v + dir));
   el('totalCycles').value = next;
-  const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  clearTimeout(_stepCyclesTimer);
+  _stepCyclesTimer = setTimeout(() => rebuildAndSimulate(), 300);
 }
 
 function stepDGB(dir) {
@@ -880,7 +1058,7 @@ function stepModel(id, step) {
   const next = Math.min(PRICE_MAX, Math.max(PRICE_MIN, +(v + step).toFixed(4)));
   el(id).value = next;
   updateFDV();
-  isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  isCustom = false; rebuildAndSimulate();
 }
 
 el('startDGB').addEventListener('keydown', e => {
@@ -922,8 +1100,9 @@ el('startDGB').addEventListener('paste', e => {
   el('startDGB').value = num.toLocaleString();
   simulate();
 });
-el('mintRate').addEventListener('change', updateMintHint);
 el('totalCycles').addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp') { e.preventDefault(); stepCycles(1); return; }
+  if (e.key === 'ArrowDown') { e.preventDefault(); stepCycles(-1); return; }
   const blocked = ['.', ',', '-', '+', 'e', 'E', '='];
   if (blocked.includes(e.key)) e.preventDefault();
 });
@@ -931,28 +1110,25 @@ el('totalCycles').addEventListener('input', () => {
   const raw = el('totalCycles').value;
   if (raw === '' || raw === '-') return; // allow empty while typing
   let v = Math.round(+raw);
-  if (v > 240) { v = 240; el('totalCycles').value = 240; }
+  if (v > 120) { v = 120; el('totalCycles').value = 120; }
   if (v < 1) { v = 1; el('totalCycles').value = 1; }
-  const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  rebuildAndSimulate();
 });
 el('totalCycles').addEventListener('blur', () => {
   const raw = el('totalCycles').value;
   if (raw === '' || isNaN(+raw) || Math.round(+raw) < 1) el('totalCycles').value = 1;
-  const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  rebuildAndSimulate();
 });
 el('totalCycles').addEventListener('paste', e => {
   e.preventDefault();
   const text = (e.clipboardData || window.clipboardData).getData('text');
   const val = Math.round(parseFloat(text.replace(/[^0-9]/g, '')));
   if (isNaN(val) || val < 1) return;
-  el('totalCycles').value = Math.min(240, val);
-  const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  el('totalCycles').value = Math.min(120, val);
+  rebuildAndSimulate();
 });
 
-el('priceModel').addEventListener('change', () => { isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate(); });
-
-const PRICE_MAX = 999.9999;
-const PRICE_MIN = 0.0001;
+el('priceModel').addEventListener('change', () => { isCustom = false; rebuildAndSimulate(); });
 
 function priceKeydown(e, inp, step) {
   if (e.key === 'ArrowUp') { e.preventDefault(); const v = inp.value === '' ? PRICE_MIN : parseFloat(inp.value); inp.value = Math.min(PRICE_MAX, Math.max(PRICE_MIN, +(v+step).toFixed(4))); inp.dispatchEvent(new Event('input')); return; }
@@ -991,19 +1167,21 @@ function priceKeydown(e, inp, step) {
   const step = 0.0001;
   el(id).addEventListener('keydown', e => priceKeydown(e, el(id), step));
   el(id).addEventListener('input', () => {
+    // Strip leading zeros (007 → 7, 007.04 → 7.04, 0.04 stays 0.04)
+    el(id).value = el(id).value.replace(/^0+(\d)/, '$1');
     const v = parseFloat(el(id).value);
     if (!isNaN(v) && v > PRICE_MAX) el(id).value = PRICE_MAX.toString();
     const dot = el(id).value.indexOf('.');
     if (dot !== -1 && el(id).value.length - dot - 1 > 4) el(id).value = parseFloat(el(id).value).toFixed(4);
     updateFDV();
-    isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+    isCustom = false; rebuildAndSimulate();
   });
   el(id).addEventListener('blur', () => {
     const v = parseFloat(el(id).value);
     if (isNaN(v) || v < PRICE_MIN) el(id).value = '0.0001';
     else if (v > PRICE_MAX) el(id).value = PRICE_MAX.toString();
     updateFDV();
-    isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+    isCustom = false; rebuildAndSimulate();
   });
   el(id).addEventListener('paste', e => {
     e.preventDefault();
@@ -1011,49 +1189,42 @@ function priceKeydown(e, inp, step) {
     if (isNaN(val) || val < PRICE_MIN || val > PRICE_MAX) return;
     el(id).value = +val.toFixed(4);
     updateFDV();
-    isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+    isCustom = false; rebuildAndSimulate();
   });
 });
 
 if (location.search) { loadFromParams(); } else {
   const start = parseFloat(el('modelStart').value) || 0.004;
   el('modelEnd').value = Math.min(PRICE_MAX, +(start * 10).toFixed(4));
-  buildPrices(getG().n); buildGrid(getG().n); simulate();
+  rebuildAndSimulate();
 }
 
 window._liveStatus = 'Fetching Live Price...';
 updateFDV();
 
-(function fetchLivePrice() {
+function fetchLivePrice(isInitial) {
   fetch('https://api.coingecko.com/api/v3/simple/price?ids=digibyte&vs_currencies=usd')
     .then(r => r.json())
     .then(data => {
       const price = data?.digibyte?.usd;
-      if (!price) { window._liveStatus = 'Live Price Unavailable'; updateFDV(); return; }
+      if (!price) {
+        if (isInitial) { window._liveStatus = 'Live Price Unavailable'; updateFDV(); }
+        return;
+      }
       window._livePrice = +price.toFixed(4);
       window._liveStatus = null;
-      if (!location.search) {
+      if (isInitial && !location.search) {
         el('modelStart').value = window._livePrice;
         el('modelEnd').value = Math.min(PRICE_MAX, +(window._livePrice * 10).toFixed(4));
-        isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+        isCustom = false; rebuildAndSimulate();
       }
       updateFDV();
     })
-    .catch(() => { window._liveStatus = 'Live Price Unavailable'; updateFDV(); });
-})();
+    .catch(() => { if (isInitial) { window._liveStatus = 'Live Price Unavailable'; updateFDV(); } });
+}
 
-setInterval(function() {
-  fetch('https://api.coingecko.com/api/v3/simple/price?ids=digibyte&vs_currencies=usd')
-    .then(r => r.json())
-    .then(data => {
-      const price = data?.digibyte?.usd;
-      if (!price) return;
-      window._livePrice = +price.toFixed(4);
-      window._liveStatus = null;
-      updateFDV();
-    })
-    .catch(() => {});
-}, 5 * 60 * 1000);
+fetchLivePrice(true);
+setInterval(() => fetchLivePrice(false), 5 * 60 * 1000);
 
 
 function applyLivePrice(price, btn) {
@@ -1065,68 +1236,1763 @@ function applyLivePrice(price, btn) {
   }
   el('modelStart').value = price;
   updateFDV();
-  isCustom = false; updateIndicator(); const g = getG(); buildPrices(g.n); buildGrid(g.n); simulate();
+  isCustom = false; rebuildAndSimulate();
 }
 
 
-// Hold-to-repeat for spinner buttons
-function makeHoldRepeat(fn) {
-  var timeout, interval, accelTimeout, didRepeat, isDown;
-  function start() {
-    isDown = true;
-    didRepeat = false;
-    timeout = setTimeout(function() {
-      didRepeat = true;
-      fn();
-      interval = setInterval(fn, 100);
-      accelTimeout = setTimeout(function() {
-        clearInterval(interval);
-        interval = setInterval(fn, 40);
-      }, 1000);
-    }, 400);
-  }
-  function stop() {
-    clearTimeout(timeout); clearInterval(interval); clearTimeout(accelTimeout);
-    if (isDown && !didRepeat) fn();
-    isDown = false;
-    didRepeat = false;
-  }
-  function cancel() {
-    clearTimeout(timeout); clearInterval(interval); clearTimeout(accelTimeout);
-    isDown = false;
-    didRepeat = false;
-  }
-  return { start: start, stop: stop, cancel: cancel };
+// ═══════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════════════════════
+function setHeaderOffset() {
+  const wrapper = document.getElementById('headerWrapper');
+  if (wrapper) document.documentElement.style.setProperty('--header-h', wrapper.offsetHeight + 'px');
 }
 
-(function attachHoldRepeat() {
-  var handlers = {
-    "cycleUp":   makeHoldRepeat(function() { stepCycles(1); }),
-    "cycleDown": makeHoldRepeat(function() { stepCycles(-1); }),
-    "dgbUp":     makeHoldRepeat(function() { stepDGB(1); }),
-    "dgbDown":   makeHoldRepeat(function() { stepDGB(-1); }),
-    "msUp":      makeHoldRepeat(function() { stepModel("modelStart", 0.0001); }),
-    "msDown":    makeHoldRepeat(function() { stepModel("modelStart", -0.0001); }),
-    "meUp":      makeHoldRepeat(function() { stepModel("modelEnd", 0.0001); }),
-    "meDown":    makeHoldRepeat(function() { stepModel("modelEnd", -0.0001); }),
-    "slipUp":    makeHoldRepeat(function() { stepSlippage(0.1); }),
-    "slipDown":  makeHoldRepeat(function() { stepSlippage(-0.1); })
-  };
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+  localStorage.setItem('dd_last_tab', tab);
+  const sub = document.getElementById('trackerSubHeader');
+  if (sub) sub.classList.toggle('visible', tab === 'tracker');
+  requestAnimationFrame(setHeaderOffset);
+  if (tab === 'tracker') renderTracker();
+}
 
-  function attach(btn, handler) {
-    btn.addEventListener("mousedown", handler.start);
-    btn.addEventListener("mouseup", handler.stop);
-    btn.addEventListener("mouseleave", handler.cancel);
-    btn.addEventListener("touchstart", function(e) { e.preventDefault(); handler.start(); }, { passive: false });
-    btn.addEventListener("touchend", handler.stop);
-    btn.addEventListener("touchcancel", handler.cancel);
-  }
+// ═══════════════════════════════════════════════════════
+//  TRACKER DATA
+// ═══════════════════════════════════════════════════════
+const TRACKER_INT_FIELDS = ['dgbLocked'];
+const TRACKER_DEC_FIELDS = ['ddMinted'];
+let trackerCycles = [];
 
-  document.querySelectorAll(".spinner-btn").forEach(function(btn) {
-    var action = btn.getAttribute("data-action");
-    if (handlers[action]) attach(btn, handlers[action]);
+const LS_KEY = 'dd_tracker_v1';
+const LS_OPEN_KEY = 'dd_open_cards_v1';
+
+function saveOpenCards() {
+  try {
+    localStorage.setItem(LS_OPEN_KEY, JSON.stringify({
+      cards: [...window._openCards]
+    }));
+  } catch(e) {}
+}
+
+function loadOpenCards() {
+  try {
+    const raw = localStorage.getItem(LS_OPEN_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      // Support both old array format and object format
+      if (Array.isArray(data)) {
+        window._openCards = new Set(data);
+      } else if (data && typeof data === 'object') {
+        window._openCards = new Set(Array.isArray(data.cards) ? data.cards : []);
+      }
+      return;
+    }
+  } catch(e) {}
+  // Default: open the first active cycle
+  const first = trackerCycles.find(c => c.status === 'active');
+  if (first) window._openCards = new Set([first.id]);
+}
+
+function loadTrackerFromStorage() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (Array.isArray(data)) trackerCycles = decompressCycles(data);
+  } catch(e) {}
+
+  loadOpenCards();
+}
+
+function saveTrackerToStorage() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(compressCycles(trackerCycles)));
+  } catch(e) {}
+}
+
+function confirmClearStorage(btn) {
+  btn.style.display = 'none';
+  const confirmRow = document.createElement('div');
+  confirmRow.id = 'clearConfirmRow';
+  confirmRow.style.cssText = 'display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:nowrap; width:100%;';
+  const label = document.createElement('span');
+  label.style.cssText = "font-size:11px; color:var(--loss); font-family:'Josefin Sans',sans-serif; font-weight:600; white-space:nowrap; letter-spacing:0.04em;";
+  label.textContent = 'Clear all data?';
+  const yesBtn = document.createElement('button');
+  yesBtn.className = 'action-btn danger';
+  yesBtn.style.cssText = 'min-width:unset; width:auto; height:36px; line-height:36px; padding:0 20px; font-size:12px; white-space:nowrap; margin:0;';
+  yesBtn.textContent = 'Yes';
+  yesBtn.addEventListener('click', () => {
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_OPEN_KEY);
+    window._openCards = new Set();
+    trackerCycles = [];
+    confirmRow.remove();
+    btn.style.display = '';
+    resetCalculator(null);
+    setTimeout(() => { addTrackerCycle(); renderTracker(); }, 0);
   });
-})();
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'action-btn';
+  cancelBtn.style.cssText = 'min-width:unset; width:auto; height:36px; line-height:36px; padding:0 20px; font-size:12px; white-space:nowrap; margin:0;';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.addEventListener('click', () => {
+    confirmRow.remove();
+    btn.style.display = '';
+  });
+  confirmRow.appendChild(label);
+  confirmRow.appendChild(yesBtn);
+  confirmRow.appendChild(cancelBtn);
+  btn.parentNode.appendChild(confirmRow);
+}
+
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+// ═══════════════════════════════════════════════════════
+//  ADD / EDIT / DELETE
+// ═══════════════════════════════════════════════════════
+function addTrackerCycle() {
+  const hasIncomplete = trackerCycles.some(c =>
+    c.status === 'active' && !stageGates(c).lockDone
+  );
+  if (hasIncomplete) return;
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  const cycle = {
+    id: generateId(),
+    createdAt: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true }),
+    createdAtRaw: new Date().toISOString(),
+    label: 'New Cycle',
+    status: 'active',
+    dgbLocked: '',
+    mintRate: '',
+    lockDate: todayStr,
+    unlockDate: '',
+    ddMinted: '',
+    buys: [],
+    sells: [],
+    notes: ''
+  };
+  trackerCycles.unshift(cycle);
+  window._openCards = window._openCards || new Set();
+  window._openCards.add(cycle.id);
+  saveOpenCards();
+  saveTrackerToStorage();
+  renderTracker();
+}
+
+function ensureActiveCycle() {
+  const hasActive = trackerCycles.some(c => c.status === 'active');
+  if (!hasActive) addTrackerCycle();
+}
+
+function deleteTrackerCycle(id) {
+  const cycle = trackerCycles.find(c => c.id === id);
+  if (!cycle) return;
+  if (cycle.status === 'active' && trackerCycles.filter(c => c.status === 'active').length <= 1) return;
+  trackerCycles = trackerCycles.filter(c => c.id !== id);
+  if (window._openCards) { window._openCards.delete(id); saveOpenCards(); }
+  saveTrackerToStorage();
+  ensureActiveCycle();
+  renderTracker();
+}
+
+function confirmDelete(id, btn) {
+  const actions = btn.parentNode;
+  btn.style.display = 'none';
+  const confirmRow = document.createElement('div');
+  confirmRow.style.cssText = 'display:flex; gap:6px; align-items:center;';
+  confirmRow.className = 'confirm-delete-row';
+
+  const label = document.createElement('span');
+  label.style.cssText = "font-size:11px; color:var(--loss); font-family:'Josefin Sans',sans-serif; font-weight:600;";
+  label.textContent = 'Delete?';
+
+  const yesBtn = document.createElement('button');
+  yesBtn.className = 'action-btn danger';
+  yesBtn.style.cssText = 'min-width:unset; height:30px; line-height:30px; padding:0 12px; font-size:11px;';
+  yesBtn.textContent = 'Yes';
+  yesBtn.addEventListener('click', () => deleteTrackerCycle(id));
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'action-btn';
+  cancelBtn.style.cssText = 'min-width:unset; height:30px; line-height:30px; padding:0 12px; font-size:11px;';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.addEventListener('click', () => {
+    confirmRow.remove();
+    btn.style.display = '';
+  });
+
+  confirmRow.appendChild(label);
+  confirmRow.appendChild(yesBtn);
+  confirmRow.appendChild(cancelBtn);
+  actions.appendChild(confirmRow);
+}
+
+function updateTrackerField(id, field, value) {
+  const cycle = trackerCycles.find(c => c.id === id);
+  if (!cycle) return;
+  if (field === 'label') {
+    value = (value || '').replace(/^\s+|\s+$/g, '') || 'New Cycle';
+  }
+  cycle[field] = value;
+  // Auto-fill unlock date when lock date or mint rate changes
+  if (field === 'ddMinted') {
+    refreshBuyEntryAutos(id);
+  }
+  if (field === 'lockDate' || field === 'mintRate') {
+    // Read lockDate from DOM data-iso in case blur hasn't committed yet
+    const dateInp = document.getElementById('tc-datetext-' + id);
+    const liveLockDate = (dateInp && dateInp.dataset.iso) || cycle.lockDate || '';
+    if (field === 'mintRate' && liveLockDate) cycle.lockDate = liveLockDate;
+    const newUnlock = calcUnlockDate(liveLockDate || cycle.lockDate, cycle.mintRate);
+    cycle.unlockDate = newUnlock || '';
+    const udEl = document.getElementById('tc-unlockdate-' + id);
+    if (udEl) udEl.value = newUnlock ? fmtDate(newUnlock) : '';
+  }
+  saveTrackerToStorage();
+  renderTrackerStats(id);
+  applyStageGating(id);
+  updateAddCycleBtn();
+  // Update lock price auto field
+  const card = document.getElementById('tc-' + id);
+  if (card) {
+    const getInpVal = (f) => { const el = card.querySelector('[data-field="' + f + '"]'); return el ? el.value : ''; };
+    const liveSnap = {
+      dgbLocked: getInpVal('dgbLocked').replace(/,/g, ''),
+      mintRate: getInpVal('mintRate'),
+      ddMinted: getInpVal('ddMinted').replace(/,/g, ''),
+      buys: cycle.buys || [],
+      sells: cycle.sells || [],
+    };
+    const stats = computeStats(liveSnap);
+    const lpEl = document.getElementById('tc-lockprice-' + id);
+    if (lpEl) lpEl.value = fmtPrice(stats.dgbLockPrice);
+    // Update summary line
+    const dgbVal = parseFloat(liveSnap.dgbLocked) || 0;
+  }
+}
+
+function setTrackerStatus(id, status) {
+  const cycle = trackerCycles.find(c => c.id === id);
+  if (!cycle) return;
+  cycle.status = status;
+  if (status === 'completed' || status === 'archived') {
+    if (window._openCards) { window._openCards.delete(id); saveOpenCards(); }
+  }
+  saveTrackerToStorage();
+  ensureActiveCycle();
+  renderTracker();
+}
+
+// ═══════════════════════════════════════════════════════
+//  COMPUTED STATS
+// ═══════════════════════════════════════════════════════
+function computeStats(c) {
+  const dgbLocked = parseFloat((c.dgbLocked || '').toString().replace(/,/g,'')) || 0;
+  const mintRate = parseFloat(c.mintRate) / 100 || 0;
+  const ddMinted = parseFloat((c.ddMinted || '').toString().replace(/,/g,'')) || 0;
+
+  const buys = (c.buys || []);
+  const sells = (c.sells || []);
+
+  const totalDgbBought = buys.reduce((s, b) => s + (parseFloat((b.dgbBought||'').toString().replace(/,/g,'')) || 0), 0);
+  const totalDdSpent   = buys.reduce((s, b) => s + (parseFloat((b.ddTraded||'').toString().replace(/,/g,'')) || 0), 0);
+  const totalDgbSold   = sells.reduce((s, b) => s + (parseFloat((b.dgbSold||'').toString().replace(/,/g,'')) || 0), 0);
+  const totalDdRecovered = sells.reduce((s, b) => s + (parseFloat((b.ddRecovered||'').toString().replace(/,/g,'')) || 0), 0);
+
+  const dgbLockPrice = (ddMinted > 0 && dgbLocked > 0 && mintRate > 0)
+    ? ddMinted / (dgbLocked * mintRate) : 0;
+  const effBuyPrice  = (totalDdSpent > 0 && totalDgbBought > 0) ? totalDdSpent / totalDgbBought : 0;
+  const effSellPrice = (totalDdRecovered > 0 && totalDgbSold > 0) ? totalDdRecovered / totalDgbSold : 0;
+  const excessDgb    = totalDgbBought - totalDgbSold;
+  const ddRemaining  = ddMinted - totalDdSpent;
+
+  // Return = net DGB gained as % of DGB locked
+  // Only meaningful once all DD has been recovered (cycle fully closed)
+  let pct = 0;
+  if (dgbLocked > 0 && ddMinted > 0 && totalDdRecovered >= ddMinted) {
+    const netDgb = totalDgbBought - totalDgbSold;
+    pct = (netDgb / dgbLocked) * 100;
+  }
+
+  return { dgbLocked, mintRate, ddMinted, totalDgbBought, totalDdSpent,
+    totalDgbSold, totalDdRecovered, dgbLockPrice, effBuyPrice, effSellPrice,
+    excessDgb, ddRemaining, pct };
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════
+const MINT_RATE_LABELS = {
+  '20':'20% / 30 Days','25':'25% / 3 Months','28.6':'28.6% / 6 Months',
+  '33.3':'33.3% / 1 Year','36.4':'36.4% / 2 Years','40':'40% / 3 Years',
+  '44.4':'44.4% / 5 Years','47.2':'47.2% / 7 Years','50':'50% / 10 Years'
+};
+
+// Lock period offsets: [months, days] — months added first, then days
+const LOCK_OFFSETS = {
+  '20':   [0, 30],   // 30 days
+  '25':   [3, 0],    // 3 months
+  '28.6': [6, 0],    // 6 months
+  '33.3': [12, 0],   // 1 year
+  '36.4': [24, 0],   // 2 years
+  '40':   [36, 0],   // 3 years
+  '44.4': [60, 0],   // 5 years
+  '47.2': [84, 0],   // 7 years
+  '50':   [120, 0],  // 10 years
+};
+
+function setLockDateToday(cycleId) {
+  const today = new Date();
+  const iso = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  const inp = document.getElementById('tc-datetext-' + cycleId);
+  if (inp) {
+    inp.value = fmtDateInput(iso);
+    inp.dataset.iso = iso;
+  }
+  updateTrackerField(cycleId, 'lockDate', iso);
+  // resortInPlace deferred — calling it here moves DOM nodes and breaks button click
+}
+
+function calcUnlockDate(startDate, mintRate) {
+  if (!startDate) return '';
+  const offset = LOCK_OFFSETS[mintRate];
+  if (!offset) return '';
+  const [y, m, d] = startDate.split('-').map(Number);
+  const date = new Date(y, m - 1 + offset[0], d + offset[1]);
+  const yr = date.getFullYear();
+  const mo = String(date.getMonth() + 1).padStart(2, '0');
+  const dy = String(date.getDate()).padStart(2, '0');
+  return yr + '-' + mo + '-' + dy;
+}
+
+function stepTrackerField(id, field, step) {
+  const cycle = trackerCycles.find(c => c.id === id);
+  if (!cycle) return;
+  const card = document.getElementById('tc-' + id);
+  if (!card) return;
+  const inp = card.querySelector('[data-field="' + field + '"]');
+  if (!inp) return;
+
+  if (TRACKER_INT_FIELDS.includes(field)) {
+    const raw = parseFloat(inp.value.replace(/,/g, '')) || 0;
+    const next = Math.max(0, Math.min(2000000000, raw + step));
+    const parts = next.toString().split('.');
+    const decPart = (next < 2000000000 && parts[1]) ? '.' + parts[1].slice(0, 8) : '';
+    inp.value = Math.floor(next).toLocaleString().split('.')[0] + decPart;
+    updateTrackerField(id, field, inp.value.replace(/,/g, ''));
+  } else if (TRACKER_DEC_FIELDS.includes(field)) {
+    const raw = parseFloat(inp.value.replace(/,/g, '')) || 0;
+    const next = Math.max(0, Math.min(2000000000, Math.round(raw + step)));
+    const parts = next.toString().split('.');
+    const decPart = (next < 2000000000 && parts[1]) ? '.' + parts[1].slice(0, 2) : '';
+    inp.value = Math.floor(next).toLocaleString() + decPart;
+    updateTrackerField(id, field, inp.value.replace(/,/g, ''));
+  }
+}
+
+function flushAllCyclesToData() {
+  trackerCycles.forEach(c => {
+    const card = document.getElementById('tc-' + c.id);
+    if (!card) return;
+    const fields = ['dgbLocked','mintRate','ddMinted','notes'];
+    fields.forEach(f => {
+      const el = card.querySelector('[data-field="' + f + '"]');
+      if (!el) return;
+      c[f] = el.value.replace(/,/g, '');
+    });
+    const dateText = document.getElementById('tc-datetext-' + c.id);
+    if (dateText) c.lockDate = dateText.dataset.iso || c.lockDate || '';
+    // buys/sells updated in-place via entry functions
+  });
+}
+
+function updateAddCycleBtn() {
+  const btn = document.getElementById('addCycleBtn');
+  if (!btn) return;
+  const hasIncomplete = trackerCycles.some(c =>
+    c.status === 'active' && !stageGates(c).lockDone
+  );
+  btn.style.opacity = hasIncomplete ? '0.4' : '1';
+  btn.style.pointerEvents = hasIncomplete ? 'none' : '';
+  btn.title = hasIncomplete ? 'Complete Lock & Mint first' : '';
+}
+
+function getSortFn(sortVal) {
+  return {
+    'newest':      (a, b) => (b.createdAtRaw || b.createdAt || '').localeCompare(a.createdAtRaw || a.createdAt || ''),
+    'oldest':      (a, b) => (a.createdAtRaw || a.createdAt || '').localeCompare(b.createdAtRaw || b.createdAt || ''),
+    'dgb_high':    (a, b) => (parseFloat(b.dgbLocked) || 0) - (parseFloat(a.dgbLocked) || 0),
+    'dgb_low':     (a, b) => (parseFloat(a.dgbLocked) || 0) - (parseFloat(b.dgbLocked) || 0),
+    'unlock_soon': (a, b) => (a.unlockDate || '9999').localeCompare(b.unlockDate || '9999'),
+    'unlock_late': (a, b) => (b.unlockDate || '').localeCompare(a.unlockDate || ''),
+  }[sortVal] || (() => 0);
+}
+
+function renderTracker() {
+  flushAllCyclesToData();
+  const list = document.getElementById('trackerList');
+  const sortVal = (document.getElementById('trackerSort') || {}).value || 'newest';
+  const sortFn = getSortFn(sortVal);
+  const active = trackerCycles.filter(c => c.status === 'active').sort(sortFn);
+  const completed = trackerCycles.filter(c => c.status === 'completed').sort(sortFn);
+  const archived = trackerCycles.filter(c => c.status === 'archived').sort(sortFn);
+  let html = '';
+  const detailsStyle = 'margin-top:16px;';
+  const labelStyle = 'font-family:Josefin Sans,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 0;border-top:1px solid var(--divider);user-select:none;';
+  const activeLabelStyle = 'font-family:Josefin Sans,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 0 8px;user-select:none;';
+  if (active.length === 0 && completed.length === 0 && archived.length === 0) {
+    html = '<div class="empty-state">No cycles yet. Hit <strong>+ Add Cycle</strong> to get started.</div>';
+  } else {
+    if (active.length > 0) {
+      html += '<div>'
+        + '<div style="' + activeLabelStyle + '"><span>Active (' + active.length + ')</span><button id="addCycleBtn" onclick="addTrackerCycle()" style="all:unset;box-sizing:border-box;cursor:pointer;font-size:11px;font-family:\'Josefin Sans\',sans-serif;font-weight:600;letter-spacing:0.04em;color:var(--primary);border:1px solid var(--primary);border-radius:6px;padding:4px 10px 3px;transition:background 0.15s,color 0.15s;" onmouseover="this.style.background=\'var(--primary)\';this.style.color=\'#fff\'" onmouseout="this.style.background=\'\';this.style.color=\'var(--primary)\'">+ Add Cycle</button></div>'
+        + '<div style="margin-top:10px;">' + active.map(c => renderCycleCard(c)).join('') + '</div>'
+        + '</div>';
+    } else {
+      html += '<div style="' + activeLabelStyle + '"><span>Active (0)</span><button id="addCycleBtn" onclick="addTrackerCycle()" style="all:unset;box-sizing:border-box;cursor:pointer;font-size:11px;font-family:\'Josefin Sans\',sans-serif;font-weight:600;letter-spacing:0.04em;color:var(--primary);border:1px solid var(--primary);border-radius:6px;padding:4px 10px 3px;transition:background 0.15s,color 0.15s;" onmouseover="this.style.background=\'var(--primary)\';this.style.color=\'#fff\'" onmouseout="this.style.background=\'\';this.style.color=\'var(--primary)\'">+ Add Cycle</button></div>'
+        + '<div style="padding:12px 0;color:var(--muted);font-size:12px;">No active cycles.</div>';
+    }
+    if (completed.length > 0) {
+      html += '<div style="' + detailsStyle + '"><div style="' + labelStyle + '"><span>Completed (' + completed.length + ')</span></div>'
+        + '<div style="margin-top:10px;">' + completed.map(c => renderCycleCard(c)).join('') + '</div></div>';
+    }
+    if (archived.length > 0) {
+      html += '<div style="' + detailsStyle + '"><div style="' + labelStyle + '"><span>Archived (' + archived.length + ')</span></div>'
+        + '<div style="margin-top:10px;">' + archived.map(c => renderCycleCard(c)).join('') + '</div></div>';
+    }
+  }
+  list.innerHTML = html;
+
+  // Attach listeners
+  trackerCycles.forEach(c => {
+    const card = document.getElementById('tc-' + c.id);
+    if (!card) return;
+    card.querySelectorAll('[data-field]').forEach(inp => {
+      const field = inp.dataset.field;
+
+      // Date inputs and selects handle their own keyboard behaviour — skip all custom listeners
+      if (inp.tagName === 'SELECT' || inp.readOnly) {
+        inp.addEventListener('input', () => updateTrackerField(c.id, field, inp.value));
+        inp.addEventListener('change', () => {
+          updateTrackerField(c.id, field, inp.value);
+          if (field === 'mintRate') {
+            const sortVal = (document.getElementById('trackerSort') || {}).value || '';
+            if (sortVal === 'unlock_soon' || sortVal === 'unlock_late') resortInPlace();
+          }
+        });
+        return;
+      }
+
+      if (field === 'lockDate') {
+        // Simple MM/DD/YYYY text input
+        // Slashes auto-insert after MM and DD, backspace respects cursor position
+
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { inp.blur(); return; }
+
+          // Backspace: if selection exists let browser handle it; otherwise skip over slash
+          if (e.key === 'Backspace') {
+            const start = inp.selectionStart;
+            const end = inp.selectionEnd;
+            if (start !== end) return; // selection — let browser delete it naturally
+            if (start > 0 && inp.value[start - 1] === '/') {
+              e.preventDefault();
+              inp.value = inp.value.slice(0, start - 2) + inp.value.slice(start - 1);
+              inp.setSelectionRange(start - 2, start - 2);
+              inp.dispatchEvent(new Event('input'));
+            }
+            return;
+          }
+
+          // Arrow up/down: increment/decrement segment under cursor
+          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            const dir = e.key === 'ArrowUp' ? 1 : -1;
+            const pos = inp.selectionStart;
+
+            // If empty or incomplete, seed with today first
+            let base = inp.value;
+            const digits = base.replace(/[^\d]/g, '');
+            if (digits.length < 8) {
+              const t = new Date();
+              base = String(t.getMonth()+1).padStart(2,'0') + '/' +
+                     String(t.getDate()).padStart(2,'0') + '/' +
+                     String(t.getFullYear());
+              inp.value = base;
+            }
+
+            const d = base.replace(/[^\d]/g, '');
+            let mm = parseInt(d.slice(0,2)) || 1;
+            let dd = parseInt(d.slice(2,4)) || 1;
+            let yy = parseInt(d.slice(4,8)) || new Date().getFullYear();
+
+            // Determine segment from cursor position in formatted string (MM/DD/YYYY)
+            // pos 0-2 = month, 3-5 = day, 6-10 = year
+            const seg = pos <= 2 ? 'mm' : pos <= 5 ? 'dd' : 'yy';
+
+            let date = new Date(yy, mm - 1, dd);
+            if (seg === 'mm') {
+              date.setMonth(date.getMonth() + dir);
+            } else if (seg === 'dd') {
+              date.setDate(date.getDate() + dir);
+            } else {
+              date.setFullYear(date.getFullYear() + dir);
+            }
+
+            const nm = String(date.getMonth()+1).padStart(2,'0');
+            const nd = String(date.getDate()).padStart(2,'0');
+            const ny = String(date.getFullYear());
+            const newVal = nm + '/' + nd + '/' + ny;
+            inp.value = newVal;
+            // Value is already fully formatted — commit directly, skip input handler
+            const segStart = seg === 'mm' ? 0 : seg === 'dd' ? 3 : 6;
+            const segEnd   = seg === 'mm' ? 2 : seg === 'dd' ? 5 : 10;
+            const restoredPos = Math.min(Math.max(pos, segStart), segEnd);
+            inp.setSelectionRange(restoredPos, restoredPos);
+            inp.dataset.iso = date.getFullYear() + '-' + nm + '-' + nd;
+            updateTrackerField(c.id, 'lockDate', inp.dataset.iso);
+            // Don't resortInPlace here — moving DOM nodes causes blur
+            return;
+          }
+        });
+
+        inp.addEventListener('paste', e => {
+          e.preventDefault();
+          const text = (e.clipboardData || window.clipboardData).getData('text');
+          const digits = text.replace(/[^\d]/g, '');
+          if (!digits) return;
+          inp.value = digits.slice(0, 8);
+          inp.dispatchEvent(new Event('input'));
+        });
+
+        inp.addEventListener('input', e => {
+          const pos = inp.selectionStart;
+          const prev = inp.value;
+          // Strip non-digits
+          let digits = prev.replace(/[^\d]/g, '');
+          if (digits.length > 8) digits = digits.slice(0, 8);
+          // Rebuild with slashes — insert slash immediately after 2nd MM/DD digit
+          let formatted = digits;
+          if (digits.length >= 5) formatted = digits.slice(0,2) + '/' + digits.slice(2,4) + '/' + digits.slice(4);
+          else if (digits.length === 4) formatted = digits.slice(0,2) + '/' + digits.slice(2) + '/';
+          else if (digits.length >= 3) formatted = digits.slice(0,2) + '/' + digits.slice(2);
+          else if (digits.length === 2) formatted = digits + '/';
+          // Adjust cursor: count how many slashes were before the cursor in old value
+          const slashesBefore = (prev.slice(0, pos).match(/\//g) || []).length;
+          const digitsBeforeCursor = pos - slashesBefore;
+          // Find position in new string after digitsBeforeCursor digits
+          let newPos = 0, counted = 0;
+          for (let i = 0; i < formatted.length; i++) {
+            if (formatted[i] !== '/') { counted++; }
+            if (counted >= digitsBeforeCursor) { newPos = i + 1; break; }
+          }
+          // Skip over slashes
+          while (newPos < formatted.length && formatted[newPos] === '/') newPos++;
+          inp.value = formatted;
+          inp.setSelectionRange(newPos, newPos);
+        });
+
+        inp.addEventListener('blur', e => {
+          // If focus moved to the Today button, skip sort — it would move the DOM and cancel the click
+          const toToday = e.relatedTarget && e.relatedTarget.onclick &&
+                          e.relatedTarget.onclick.toString().includes('setLockDateToday');
+
+          function commitToday() {
+            const t = new Date();
+            const iso = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+            inp.value = fmtDateInput(iso);
+            inp.dataset.iso = iso;
+            updateTrackerField(c.id, 'lockDate', iso);
+            if (!toToday) resortInPlace();
+          }
+
+          const v = inp.value.trim();
+          // Empty or all zeros — default to today
+          if (!v || /^[0\/]+$/.test(v)) { commitToday(); return; }
+
+          const m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+          let iso = '';
+          if (m) {
+            const mo = parseInt(m[1]), dy = parseInt(m[2]), yr = parseInt(m[3]);
+            const daysInMonth = new Date(yr, mo, 0).getDate();
+            if (mo >= 1 && mo <= 12 && dy >= 1 && dy <= daysInMonth && yr >= 2000 && yr <= 2100) {
+              iso = yr + '-' + String(mo).padStart(2,'0') + '-' + String(dy).padStart(2,'0');
+            }
+          }
+          if (iso) {
+            inp.dataset.iso = iso;
+            inp.value = fmtDateInput(iso);
+            updateTrackerField(c.id, 'lockDate', iso);
+            if (!toToday) resortInPlace();
+          } else {
+            // Invalid date — fall back to today
+            commitToday();
+          }
+        });
+
+        return;
+      }
+
+      // DGB integer fields with comma formatting
+      if (field === 'dgbLocked') {
+        inp.addEventListener('keydown', e => {
+          const allowed = ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'];
+          if (allowed.includes(e.key) || e.ctrlKey || e.metaKey) return;
+          if (e.key === '.') { if (inp.value.includes('.')) e.preventDefault(); return; }
+          if (!/^\d$/.test(e.key)) { e.preventDefault(); return; }
+          const proposed = inp.value.slice(0, inp.selectionStart) + e.key + inp.value.slice(inp.selectionEnd);
+          const dot = proposed.indexOf('.');
+          if (dot !== -1 && proposed.length - dot - 1 > 8) e.preventDefault();
+        });
+        inp.addEventListener('paste', e => {
+          e.preventDefault();
+          const val = parseFloat((e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9.]/g, ''));
+          if (!isNaN(val) && val >= 0) { inp.value = val; updateTrackerField(c.id, field, String(val)); }
+        });
+      }
+
+      const intFields = ['dgbLocked'];
+      const decFields8 = ['ddMinted'];
+      const allowed = ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'];
+
+      if (TRACKER_INT_FIELDS.includes(field)) {
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'ArrowUp') { e.preventDefault(); stepTrackerField(c.id, field, 1); return; }
+          if (e.key === 'ArrowDown') { e.preventDefault(); stepTrackerField(c.id, field, -1); return; }
+          if (allowed.includes(e.key) || e.ctrlKey || e.metaKey) return;
+          if (e.key === '.') { if (inp.value.replace(/,/g, '').includes('.')) e.preventDefault(); return; }
+          if (!/^\d$/.test(e.key)) { e.preventDefault(); return; }
+          const raw = inp.value.replace(/,/g, '');
+          const proposed = raw.slice(0, inp.selectionStart - (inp.value.slice(0, inp.selectionStart).match(/,/g)||[]).length) + e.key + raw.slice(inp.selectionEnd - (inp.value.slice(0, inp.selectionEnd).match(/,/g)||[]).length);
+          const dot = proposed.indexOf('.');
+          if (dot !== -1 && proposed.length - dot - 1 > 8) { e.preventDefault(); return; }
+        });
+        inp.addEventListener('input', () => {
+          const pos = inp.selectionStart;
+          const raw = inp.value.replace(/[^0-9.]/g, '');
+          if (!raw) { inp.value = ''; updateTrackerField(c.id, field, ''); return; }
+          const parts = raw.split('.');
+          const num = Math.min(2000000000, +parts[0]);
+          const decPart = (num < 2000000000 && parts[1] !== undefined) ? '.' + parts[1].slice(0, 8) : '';
+          const formatted = num.toLocaleString() + decPart;
+          const diff = formatted.length - inp.value.length;
+          inp.value = formatted;
+          inp.setSelectionRange(Math.max(0, pos + diff), Math.max(0, pos + diff));
+          updateTrackerField(c.id, field, num + decPart);
+        });
+        inp.addEventListener('blur', () => {
+          const raw = inp.value.replace(/[^0-9.]/g, '');
+          if (!raw) { inp.value = ''; updateTrackerField(c.id, field, ''); return; }
+          const parts = raw.split('.');
+          const num = Math.min(2000000000, +parts[0]);
+          const decPart = (num < 2000000000 && parts[1] !== undefined) ? '.' + parts[1].slice(0, 8) : '';
+          inp.value = num.toLocaleString() + decPart;
+          updateTrackerField(c.id, field, inp.value.replace(/,/g, ''));
+        });
+        inp.addEventListener('paste', e => {
+          e.preventDefault();
+          const raw = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9.]/g, '');
+          if (!raw) return;
+          const parts = raw.split('.');
+          const num = Math.min(2000000000, +parts[0]);
+          const decPart = (num < 2000000000 && parts[1] !== undefined) ? '.' + parts[1].slice(0, 8) : '';
+          inp.value = num.toLocaleString() + decPart;
+          updateTrackerField(c.id, field, inp.value.replace(/,/g, ''));
+        });
+        return;
+      }
+
+      if (TRACKER_DEC_FIELDS.includes(field)) {
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'ArrowUp') { e.preventDefault(); stepTrackerField(c.id, field, 1); return; }
+          if (e.key === 'ArrowDown') { e.preventDefault(); stepTrackerField(c.id, field, -1); return; }
+          if (allowed.includes(e.key) || e.ctrlKey || e.metaKey) return;
+          if (e.key === '.') { if (inp.value.replace(/,/g,'').includes('.')) e.preventDefault(); return; }
+          if (!/^\d$/.test(e.key)) e.preventDefault();
+        });
+        inp.addEventListener('input', () => {
+          const pos = inp.selectionStart;
+          const raw = inp.value.replace(/[^0-9.]/g, '');
+          if (!raw) { inp.value = ''; updateTrackerField(c.id, field, ''); return; }
+          const parts = raw.split('.');
+          const num = Math.min(2000000000, +parts[0]);
+          const decPart = (num < 2000000000 && parts[1] !== undefined) ? '.' + parts[1].slice(0, 2) : '';
+          const formatted = num.toLocaleString() + decPart;
+          const diff = formatted.length - inp.value.length;
+          inp.value = formatted;
+          inp.setSelectionRange(Math.max(0, pos + diff), Math.max(0, pos + diff));
+          updateTrackerField(c.id, field, num + decPart);
+        });
+        inp.addEventListener('blur', () => {
+          const raw = inp.value.replace(/[^0-9.]/g, '');
+          if (!raw) { inp.value = ''; updateTrackerField(c.id, field, ''); return; }
+          const parts = raw.split('.');
+          const num = Math.min(2000000000, +parts[0]);
+          const decPart = (num < 2000000000 && parts[1] !== undefined) ? '.' + parts[1].slice(0, 2) : '';
+          inp.value = num.toLocaleString() + decPart;
+          updateTrackerField(c.id, field, inp.value.replace(/,/g, ''));
+        });
+        inp.addEventListener('paste', e => {
+          e.preventDefault();
+          const raw = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9.]/g, '');
+          if (!raw) return;
+          const parts = raw.split('.');
+          const num = Math.min(2000000000, +parts[0]);
+          const decPart = (num < 2000000000 && parts[1] !== undefined) ? '.' + parts[1].slice(0, 2) : '';
+          inp.value = num.toLocaleString() + decPart;
+          updateTrackerField(c.id, field, inp.value.replace(/,/g, ''));
+        });
+        return;
+      }
+
+      inp.addEventListener('input', () => {
+        updateTrackerField(c.id, inp.dataset.field, inp.value);
+        if (inp.dataset.field === 'notes') {
+          const counter = document.getElementById('notes-counter-' + c.id);
+          if (counter) counter.textContent = inp.value.length + '/500';
+        }
+        if (inp.tagName === 'TEXTAREA') {
+          inp.style.height = 'auto';
+          inp.style.height = inp.scrollHeight + 'px';
+        }
+      });
+      inp.addEventListener('change', () => updateTrackerField(c.id, inp.dataset.field, inp.value));
+      if (inp.tagName === 'TEXTAREA') {
+        inp.style.height = 'auto';
+        inp.style.height = inp.scrollHeight + 'px';
+      }
+    });
+    applyStageGating(c.id);
+    renderBuySection(c.id);
+    renderSellSection(c.id);
+    refreshBuyEntryAutos(c.id);
+    refreshSellEntryAutos(c.id);
+    renderTrackerStats(c.id);
+    updateHeaderSummary(c.id);
+  });
+  updateAddCycleBtn();
+  const collapseBtn = document.getElementById('collapseAllPill');
+  if (collapseBtn) collapseBtn.textContent = window._openCards.size > 0 ? 'Collapse All' : 'Expand All';
+}
+
+function resortInPlace() {
+  const sortVal = (document.getElementById('trackerSort') || {}).value || 'newest';
+  const sortFn = getSortFn(sortVal);
+
+  const list = document.getElementById('trackerList');
+  if (!list) return;
+  const active = trackerCycles.filter(c => c.status === 'active').sort(sortFn);
+  // Insert in reverse order so first sorted item ends up first
+  active.slice().reverse().forEach(c => {
+    const card = document.getElementById('tc-' + c.id);
+    if (card) list.insertBefore(card, list.firstChild);
+  });
+}
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function fmtDateInput(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return String(m).padStart(2,'0') + '/' + String(d).padStart(2,'0') + '/' + y;
+}
+
+function updateCycleTitle(id, val) {
+  const el2 = document.getElementById('tc-title-' + id);
+  if (el2) el2.textContent = val || 'New Cycle';
+}
+
+// Stage gating helpers
+// ═══════════════════════════════════════════════════════
+//  BUY / SELL ENTRY MANAGEMENT
+// ═══════════════════════════════════════════════════════
+function generateEntryId() {
+  return Math.random().toString(36).slice(2, 8);
+}
+
+function addBuyEntry(cycleId) {
+  const cycle = trackerCycles.find(c => c.id === cycleId);
+  if (!cycle) return;
+  if (!cycle.buys) cycle.buys = [];
+  cycle.buys.push({ id: generateEntryId(), dgbBought: '', ddTraded: '' });
+  saveTrackerToStorage();
+  renderBuySection(cycleId);
+  applyStageGating(cycleId);
+  renderTrackerStats(cycleId);
+}
+
+function addSellEntry(cycleId) {
+  const cycle = trackerCycles.find(c => c.id === cycleId);
+  if (!cycle) return;
+  if (!cycle.sells) cycle.sells = [];
+  cycle.sells.push({ id: generateEntryId(), dgbSold: '', ddRecovered: '' });
+  saveTrackerToStorage();
+  renderSellSection(cycleId);
+  renderTrackerStats(cycleId);
+}
+
+function removeBuyEntry(cycleId, entryId) {
+  const cycle = trackerCycles.find(c => c.id === cycleId);
+  if (!cycle) return;
+  if ((cycle.buys || []).length <= 1) return;
+  cycle.buys = cycle.buys.filter(b => b.id !== entryId);
+  saveTrackerToStorage();
+  renderBuySection(cycleId);
+  applyStageGating(cycleId);
+  renderTrackerStats(cycleId);
+}
+
+function removeSellEntry(cycleId, entryId) {
+  const cycle = trackerCycles.find(c => c.id === cycleId);
+  if (!cycle) return;
+  if ((cycle.sells || []).length <= 1) return;
+  cycle.sells = cycle.sells.filter(s => s.id !== entryId);
+  saveTrackerToStorage();
+  renderSellSection(cycleId);
+  renderTrackerStats(cycleId);
+}
+
+function updateBuyEntry(cycleId, entryId, field, value) {
+  const cycle = trackerCycles.find(c => c.id === cycleId);
+  if (!cycle) return;
+  const entry = (cycle.buys || []).find(b => b.id === entryId);
+  if (!entry) return;
+  entry[field] = value;
+  saveTrackerToStorage();
+  refreshBuyEntryAutos(cycleId);
+  refreshSellEntryAutos(cycleId);
+  renderTrackerStats(cycleId);
+}
+
+function updateSellEntry(cycleId, entryId, field, value) {
+  const cycle = trackerCycles.find(c => c.id === cycleId);
+  if (!cycle) return;
+  const entry = (cycle.sells || []).find(s => s.id === entryId);
+  if (!entry) return;
+  entry[field] = value;
+  saveTrackerToStorage();
+  refreshSellEntryAutos(cycleId);
+  renderTrackerStats(cycleId);
+}
+
+function fmtAuto(v, prefix) {
+  if (!v && v !== 0) return '—';
+  return (prefix || '') + (typeof v === 'number' ? v.toFixed(6) : v);
+}
+
+function refreshBuyEntryAutos(cycleId) {
+  const cycle = trackerCycles.find(c => c.id === cycleId);
+  if (!cycle) return;
+  const card = document.getElementById('tc-' + cycleId);
+  const buysEl = document.getElementById('tc-buys-' + cycleId);
+  // Read ddMinted live from DOM
+  const ddMintedEl = card ? card.querySelector('[data-field="ddMinted"]') : null;
+  const ddMinted = parseFloat(((ddMintedEl ? ddMintedEl.value : cycle.ddMinted) || '').toString().replace(/,/g,'')) || 0;
+  let ddRunning = ddMinted;
+  (cycle.buys || []).forEach((b) => {
+    // Read live from DOM inputs, fall back to stored data
+    const dgbBoughtEl = buysEl ? buysEl.querySelector(`[data-entry="dgbBought"][data-eid="${b.id}"]`) : null;
+    const ddTradedEl  = buysEl ? buysEl.querySelector(`[data-entry="ddTraded"][data-eid="${b.id}"]`) : null;
+    const dgbBought = parseFloat(((dgbBoughtEl ? dgbBoughtEl.value : b.dgbBought)||'').replace(/,/g,'')) || 0;
+    const ddTraded  = parseFloat(((ddTradedEl  ? ddTradedEl.value  : b.ddTraded )||'').replace(/,/g,'')) || 0;
+    const effBuy = (dgbBought > 0 && ddTraded > 0) ? ddTraded / dgbBought : 0;
+    ddRunning -= ddTraded;
+    const effEl = document.getElementById('buy-eff-' + b.id);
+    const remEl = document.getElementById('buy-rem-' + b.id);
+    if (effEl) effEl.textContent = effBuy > 0 ? fmtPrice(effBuy) : '—';
+    if (remEl) {
+      remEl.textContent = ddRunning >= 0 ? 'DD Remaining: ' + (fmtDD(ddRunning) || '0') : 'Extra DD Used: ' + fmtDD(Math.abs(ddRunning));
+      remEl.style.color = ddRunning < 0 ? 'var(--loss)' : 'var(--muted)';
+    }
+  });
+  // Update Add Another Buy button — ALL entries must be complete
+  if (buysEl) {
+    const addBtn = buysEl.querySelector('.add-entry-btn');
+    if (addBtn) {
+      const allBuysDone = (cycle.buys || []).length > 0 && (cycle.buys || []).every(b => {
+        const dgbEl = buysEl.querySelector('[data-entry="dgbBought"][data-eid="' + b.id + '"]');
+        const ddEl  = buysEl.querySelector('[data-entry="ddTraded"][data-eid="' + b.id + '"]');
+        const dgb = parseFloat(((dgbEl ? dgbEl.value : b.dgbBought)||'').replace(/,/g,'')) || 0;
+        const dd  = parseFloat(((ddEl  ? ddEl.value  : b.ddTraded )||'').replace(/,/g,'')) || 0;
+        return dgb > 0 && dd > 0;
+      });
+      addBtn.disabled = !allBuysDone;
+      addBtn.style.opacity = allBuysDone ? '1' : '0.4';
+      addBtn.style.pointerEvents = allBuysDone ? '' : 'none';
+
+    }
+  }
+}
+
+function refreshSellEntryAutos(cycleId) {
+  const cycle = trackerCycles.find(c => c.id === cycleId);
+  if (!cycle) return;
+  const buysEl  = document.getElementById('tc-buys-'  + cycleId);
+  const sellsEl = document.getElementById('tc-sells-' + cycleId);
+  // Sum DGB Bought live from DOM
+  let totalDgbBought = 0;
+  (cycle.buys || []).forEach((b) => {
+    const el = buysEl ? buysEl.querySelector(`[data-entry="dgbBought"][data-eid="${b.id}"]`) : null;
+    totalDgbBought += parseFloat(((el ? el.value : b.dgbBought)||'').replace(/,/g,'')) || 0;
+  });
+  let dgbRunning = totalDgbBought;
+  (cycle.sells || []).forEach((s) => {
+    // Read dgbSold and ddRecovered live from DOM
+    const dgbSoldEl    = sellsEl ? sellsEl.querySelector(`[data-entry="dgbSold"][data-eid="${s.id}"]`) : null;
+    const ddRecoveredEl = sellsEl ? sellsEl.querySelector(`[data-entry="ddRecovered"][data-eid="${s.id}"]`) : null;
+    const dgbSold     = parseFloat(((dgbSoldEl    ? dgbSoldEl.value     : s.dgbSold    )||'').replace(/,/g,'')) || 0;
+    const ddRecovered = parseFloat(((ddRecoveredEl ? ddRecoveredEl.value : s.ddRecovered)||'').replace(/,/g,'')) || 0;
+    const effSell = (dgbSold > 0 && ddRecovered > 0) ? ddRecovered / dgbSold : 0;
+    dgbRunning -= dgbSold;
+    const effEl = document.getElementById('sell-eff-' + s.id);
+    const remEl = document.getElementById('sell-rem-' + s.id);
+    if (effEl) effEl.textContent = effSell > 0 ? fmtPrice(effSell) : '—';
+    if (remEl) {
+      remEl.textContent = dgbRunning >= 0 ? 'DGB Remaining: ' + fmt(Math.round(dgbRunning)) : 'Extra DGB Used: ' + fmt(Math.round(Math.abs(dgbRunning)));
+      remEl.style.color = dgbRunning < 0 ? 'var(--loss)' : 'var(--muted)';
+    }
+  });
+  // Update Add Another Sell button — ALL entries must be complete
+  if (sellsEl) {
+    const addBtn = sellsEl.querySelector('.add-entry-btn');
+    if (addBtn) {
+      const allSellsDone = (cycle.sells || []).length > 0 && (cycle.sells || []).every(s => {
+        const dgbEl = sellsEl.querySelector('[data-entry="dgbSold"][data-eid="' + s.id + '"]');
+        const ddEl  = sellsEl.querySelector('[data-entry="ddRecovered"][data-eid="' + s.id + '"]');
+        const dgb = parseFloat(((dgbEl ? dgbEl.value : s.dgbSold)||'').replace(/,/g,'')) || 0;
+        const dd  = parseFloat(((ddEl  ? ddEl.value  : s.ddRecovered)||'').replace(/,/g,'')) || 0;
+        return dgb > 0 && dd > 0;
+      });
+      addBtn.disabled = !allSellsDone;
+      addBtn.style.opacity = allSellsDone ? '1' : '0.4';
+      addBtn.style.pointerEvents = allSellsDone ? '' : 'none';
+    }
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  ENTRY INPUT FORMATTING
+// ═══════════════════════════════════════════════════════
+// intEntry: comma-formatted integer (dgbBought, dgbSold)
+// decEntry: comma-formatted decimal 2dp (ddTraded, ddRecovered)
+const ENTRY_INT_FIELDS = [];
+const ENTRY_DEC_FIELDS = ['ddTraded', 'ddRecovered', 'dgbBought', 'dgbSold'];
+const ENTRY_DEC_PLACES = { ddTraded: 2, ddRecovered: 2, dgbBought: 8, dgbSold: 8 };
+const ENTRY_ALLOWED_KEYS = ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'];
+
+function attachEntryListeners(container, cycleId, updateFn) {
+  container.querySelectorAll('[data-entry]').forEach(inp => {
+    const field = inp.dataset.entry;
+    const eid   = inp.dataset.eid;
+    if (!field || !eid) return;
+
+    const isInt = ENTRY_INT_FIELDS.includes(field);
+    const isDec = ENTRY_DEC_FIELDS.includes(field);
+    if (!isInt && !isDec) return;
+
+    const decPlaces = isDec ? (ENTRY_DEC_PLACES[field] || 2) : 0;
+
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        const dir = e.key === 'ArrowUp' ? 1 : -1;
+        const step = decPlaces > 0 ? Math.pow(10, -decPlaces) : 1;
+        const raw = parseFloat(inp.value.replace(/,/g, '')) || 0;
+        const next = Math.max(0, parseFloat((raw + dir * step).toFixed(decPlaces)));
+        const parts = next.toString().split('.');
+        const decPart = decPlaces > 0 && parts[1] !== undefined ? '.' + parts[1].padEnd(decPlaces, '0').slice(0, decPlaces) : '';
+        inp.value = parseInt(parts[0]).toLocaleString() + decPart;
+        updateFn(cycleId, eid, field, inp.value.replace(/,/g, ''));
+        return;
+      }
+      if (e.key === 'Backspace') {
+        const start = inp.selectionStart, end = inp.selectionEnd;
+        if (start !== end) return; // selection — let browser handle
+        if (start > 0 && inp.value[start - 1] === ',') {
+          e.preventDefault();
+          inp.value = inp.value.slice(0, start - 2) + inp.value.slice(start - 1);
+          inp.setSelectionRange(start - 2, start - 2);
+          inp.dispatchEvent(new Event('input'));
+        }
+        return;
+      }
+      if (ENTRY_ALLOWED_KEYS.includes(e.key) || e.ctrlKey || e.metaKey) return;
+      if (e.key === '.') {
+        if (decPlaces === 0 || inp.value.replace(/,/g,'').includes('.')) e.preventDefault();
+        return;
+      }
+      if (!/^\d$/.test(e.key)) { e.preventDefault(); return; }
+    });
+
+    inp.addEventListener('input', () => {
+      const pos = inp.selectionStart;
+      const raw = inp.value.replace(/[^0-9.]/g, '');
+      if (!raw) { inp.value = ''; updateFn(cycleId, eid, field, ''); return; }
+      const parts = raw.split('.');
+      const num = Math.min(2000000000, +parts[0]);
+      const decPart = (decPlaces > 0 && num < 2000000000 && parts[1] !== undefined)
+        ? '.' + parts[1].slice(0, decPlaces) : '';
+      const formatted = num.toLocaleString() + decPart;
+      const diff = formatted.length - inp.value.length;
+      inp.value = formatted;
+      inp.setSelectionRange(Math.max(0, pos + diff), Math.max(0, pos + diff));
+      updateFn(cycleId, eid, field, num + decPart);
+    });
+
+    inp.addEventListener('blur', () => {
+      const raw = inp.value.replace(/[^0-9.]/g, '');
+      if (!raw) { inp.value = ''; updateFn(cycleId, eid, field, ''); return; }
+      const parts = raw.split('.');
+      const num = Math.min(2000000000, +parts[0]);
+      const decPart = (decPlaces > 0 && num < 2000000000 && parts[1] !== undefined)
+        ? '.' + parts[1].slice(0, decPlaces) : '';
+      inp.value = num.toLocaleString() + decPart;
+      updateFn(cycleId, eid, field, inp.value.replace(/,/g, ''));
+    });
+
+    inp.addEventListener('paste', e => {
+      e.preventDefault();
+      const raw = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9.]/g, '');
+      if (!raw) return;
+      const parts = raw.split('.');
+      const num = Math.min(2000000000, +parts[0]);
+      const decPart = (decPlaces > 0 && num < 2000000000 && parts[1] !== undefined)
+        ? '.' + parts[1].slice(0, decPlaces) : '';
+      inp.value = num.toLocaleString() + decPart;
+      updateFn(cycleId, eid, field, inp.value.replace(/,/g, ''));
+    });
+  });
+}
+
+function renderBuySection(cycleId) {
+  const cycle = trackerCycles.find(c => c.id === cycleId);
+  if (!cycle) return;
+  const container = document.getElementById('tc-buys-' + cycleId);
+  if (!container) return;
+  // Auto-seed first entry
+  if (!cycle.buys || cycle.buys.length === 0) {
+    cycle.buys = [{ id: generateEntryId(), dgbBought: '', ddTraded: '' }];
+  }
+  const dis = cycle.status !== 'active' ? 'disabled' : '';
+  const ddMinted = parseFloat((cycle.ddMinted || '').toString().replace(/,/g,'')) || 0;
+  let ddRunning = ddMinted;
+  let html = '';
+  (cycle.buys || []).forEach((b, i) => {
+    const dgbBought = parseFloat((b.dgbBought||'').replace(/,/g,'')) || 0;
+    const ddTraded   = parseFloat((b.ddTraded||'').replace(/,/g,'')) || 0;
+    const effBuy    = (dgbBought > 0 && ddTraded > 0) ? ddTraded / dgbBought : 0;
+    ddRunning -= ddTraded;
+    const remColor  = ddRunning < 0 ? 'var(--loss)' : 'var(--muted)';
+    const remText   = ddRunning >= 0 ? 'DD Remaining: ' + (fmtDD(ddRunning) || '0') : 'Extra DD Used: ' + fmtDD(Math.abs(ddRunning));
+    const showRemove = !dis && i > 0;
+    html += `
+      <div class="entry-row">
+        <div class="tracker-field">
+          <label>DD Traded</label>
+          <input type="text" inputmode="decimal" data-entry="ddTraded" data-eid="${b.id}" value="${b.ddTraded ? fmtDD(parseFloat(b.ddTraded)) : ''}" placeholder="" ${dis}>
+        </div>
+        <div class="tracker-field">
+          <label>DGB Bought</label>
+          <input type="text" inputmode="decimal" data-entry="dgbBought" data-eid="${b.id}" value="${b.dgbBought ? Number(b.dgbBought).toLocaleString() : ''}" placeholder="" ${dis}>
+        </div>
+        <div class="entry-auto">
+          <span class="auto-label">Eff. Buy Price</span>
+          <span class="auto-value" id="buy-eff-${b.id}">${effBuy > 0 ? fmtPrice(effBuy) : '—'}</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;">
+        <div class="entry-remaining" id="buy-rem-${b.id}" style="color:${remColor};margin:0;">${remText}</div>
+        ${showRemove ? `<a href="javascript:void(0)" class="live-pill danger" onclick="removeBuyEntry('${cycleId}','${b.id}')" style="flex-shrink:0;">Remove</a>` : ''}
+      </div>`;
+  });
+  if (!dis) {
+    const lastBuy = (cycle.buys || []).slice(-1)[0];
+    const lastBuyDone = lastBuy && parseFloat((lastBuy.dgbBought||'').replace(/,/g,'')) > 0 && parseFloat((lastBuy.ddTraded||'').replace(/,/g,'')) > 0;
+    html += `<button class="add-entry-btn" onclick="addBuyEntry('${cycleId}')" ${lastBuyDone ? '' : 'disabled style="opacity:0.4;pointer-events:none;"'}>Add Another Buy</button>`;
+  }
+  container.innerHTML = html;
+  attachEntryListeners(container, cycleId, updateBuyEntry);
+}
+
+function renderSellSection(cycleId) {
+  const cycle = trackerCycles.find(c => c.id === cycleId);
+  if (!cycle) return;
+  const container = document.getElementById('tc-sells-' + cycleId);
+  if (!container) return;
+  // Auto-seed first entry
+  if (!cycle.sells || cycle.sells.length === 0) {
+    cycle.sells = [{ id: generateEntryId(), dgbSold: '', ddRecovered: '' }];
+  }
+  const dis = cycle.status !== 'active' ? 'disabled' : '';
+  const totalDgbBought = (cycle.buys || []).reduce((s, b) => s + (parseFloat((b.dgbBought||'').replace(/,/g,'')) || 0), 0);
+  let dgbRunning = totalDgbBought;
+  let html = '';
+  (cycle.sells || []).forEach((s, i) => {
+    const dgbSold     = parseFloat((s.dgbSold||'').replace(/,/g,'')) || 0;
+    const ddRecovered = parseFloat((s.ddRecovered||'').replace(/,/g,'')) || 0;
+    const effSell     = (dgbSold > 0 && ddRecovered > 0) ? ddRecovered / dgbSold : 0;
+    dgbRunning -= dgbSold;
+    const remColor = dgbRunning < 0 ? 'var(--loss)' : 'var(--muted)';
+    const remText  = dgbRunning >= 0 ? 'DGB Remaining: ' + fmt(Math.round(dgbRunning)) : 'Extra DGB Used: ' + fmt(Math.round(Math.abs(dgbRunning)));
+    const showRemove = !dis && i > 0;
+    html += `
+      <div class="entry-row">
+        <div class="tracker-field">
+          <label>DGB Sold</label>
+          <input type="text" inputmode="decimal" data-entry="dgbSold" data-eid="${s.id}" value="${s.dgbSold ? Number(s.dgbSold).toLocaleString() : ''}" placeholder="" ${dis}>
+        </div>
+        <div class="tracker-field">
+          <label>DD Recovered</label>
+          <input type="text" inputmode="decimal" data-entry="ddRecovered" data-eid="${s.id}" value="${s.ddRecovered ? fmtDD(parseFloat(s.ddRecovered)) : ''}" placeholder="" ${dis}>
+        </div>
+        <div class="entry-auto">
+          <span class="auto-label">Eff. Sell Price</span>
+          <span class="auto-value" id="sell-eff-${s.id}">${effSell > 0 ? fmtPrice(effSell) : '—'}</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;">
+        <div class="entry-remaining" id="sell-rem-${s.id}" style="color:${remColor};margin:0;">${remText}</div>
+        ${showRemove ? `<a href="javascript:void(0)" class="live-pill danger" onclick="removeSellEntry('${cycleId}','${s.id}')" style="flex-shrink:0;">Remove</a>` : ''}
+      </div>`;
+  });
+  if (!dis) {
+    const lastSell = (cycle.sells || []).slice(-1)[0];
+    const lastSellDone = lastSell && parseFloat((lastSell.dgbSold||'').replace(/,/g,'')) > 0 && parseFloat((lastSell.ddRecovered||'').replace(/,/g,'')) > 0;
+    html += `<button class="add-entry-btn" onclick="addSellEntry('${cycleId}')" ${lastSellDone ? '' : 'disabled style="opacity:0.4;pointer-events:none;"'}>Add Another Sell</button>`;
+  }
+  container.innerHTML = html;
+  attachEntryListeners(container, cycleId, updateSellEntry);
+}
+
+function handleTitleKeydown(e, el) {
+  if (e.key === 'Enter') { e.preventDefault(); el.blur(); return; }
+  if (el.textContent.replace(/\u00a0/g,' ').length >= 50 && !e.ctrlKey && !e.metaKey && e.key !== 'Backspace' && e.key !== 'Delete') { e.preventDefault(); return; }
+  if (e.key === ' ') {
+    const full = el.textContent.replace(/\u00a0/g, ' ');
+    const sel = window.getSelection();
+    if (!sel.rangeCount) { e.preventDefault(); return; }
+    const range = sel.getRangeAt(0);
+    const preRange = range.cloneRange();
+    preRange.selectNodeContents(el);
+    preRange.setEnd(range.startContainer, range.startOffset);
+    const cursorPos = preRange.toString().length;
+    const charBefore = full[cursorPos - 1];
+    const charAfter  = full[cursorPos];
+    if (!charBefore || charBefore === ' ' || charAfter === ' ') e.preventDefault();
+  }
+}
+
+function handleTitleBlur(el, id) {
+  el.style.borderBottomColor = 'transparent';
+  const t = el.textContent.replace(/[\u00a0\s]+/g, ' ').replace(/^\s+|\s+$/g, '');
+  el.textContent = t || 'New Cycle';
+  updateTrackerField(id, 'label', el.textContent);
+}
+
+function handleNotesKeydown(e, ta) {
+  // Block Enter to prevent newlines
+  if (e.key === 'Enter') { e.preventDefault(); return; }
+  // Block leading space and double spaces
+  if (e.key === ' ') {
+    const v = ta.value;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    if (start !== end) return; // Replacing a selection — allow
+    const charBefore = v[start - 1];
+    const charAfter = v[start];
+    if (!charBefore || charBefore === ' ' || charAfter === ' ') e.preventDefault();
+  }
+}
+
+function handleNotesPaste(e, ta) {
+  e.preventDefault();
+  const remaining = 500 - ta.value.length;
+  if (remaining <= 0) return;
+  const raw = ((e.clipboardData || window.clipboardData).getData('text') || '').slice(0, remaining);
+  // Strip newlines, collapse spaces, trim leading/trailing on the pasted chunk
+  const cleaned = raw.replace(/[\r\n]+/g, ' ').replace(/ {2,}/g, ' ').replace(/^ +/, '').replace(/ +$/, '');
+  // Avoid creating doubles at the join points
+  const before = ta.value.slice(0, ta.selectionStart);
+  const after = ta.value.slice(ta.selectionEnd);
+  let insertion = cleaned;
+  if (before.endsWith(' ') && insertion.startsWith(' ')) insertion = insertion.replace(/^ +/, '');
+  if (after.startsWith(' ') && insertion.endsWith(' ')) insertion = insertion.replace(/ +$/, '');
+  document.execCommand('insertText', false, insertion);
+}
+
+function stageGates(c) {
+  const lockDone = !!(parseFloat((c.dgbLocked||'').toString().replace(/,/g,'')) > 0 && c.mintRate && c.lockDate && parseFloat((c.ddMinted||'').toString().replace(/,/g,'')) > 0);
+  const buyDone  = !!(lockDone && (c.buys||[]).some(b =>
+    parseFloat((b.dgbBought||'').toString().replace(/,/g,'')) > 0 &&
+    parseFloat((b.ddTraded||'').toString().replace(/,/g,'')) > 0
+  ));
+  return { lockDone, buyDone };
+}
+
+function applyStageGating(id) {
+  const c = trackerCycles.find(cc => cc.id === id);
+  if (!c || c.status !== 'active') return;
+  const card = document.getElementById('tc-' + id);
+  if (!card) return;
+
+  const getVal = (f) => { const el = card.querySelector('[data-field="' + f + '"]'); return el ? el.value : ''; };
+  const liveDgbLocked = parseFloat(getVal('dgbLocked').replace(/,/g,'')) || 0;
+  const liveMintRate  = getVal('mintRate');
+  const liveLockDate  = (document.getElementById('tc-datetext-' + id) || {}).dataset?.iso || c.lockDate || '';
+  const liveDdMinted  = parseFloat(getVal('ddMinted').replace(/,/g,'')) || 0;
+
+  const lockDone = !!(liveDgbLocked > 0 && liveMintRate && liveLockDate && liveDdMinted > 0);
+  // Read buy entry values live from DOM so edits are reflected immediately
+  const buysEl = document.getElementById('tc-buys-' + id);
+  const buyDone = !!(lockDone && (c.buys||[]).some(b => {
+    const dgbEl = buysEl ? buysEl.querySelector('[data-entry="dgbBought"][data-eid="' + b.id + '"]') : null;
+    const ddEl  = buysEl ? buysEl.querySelector('[data-entry="ddTraded"][data-eid="' + b.id + '"]') : null;
+    const dgb = parseFloat(((dgbEl ? dgbEl.value : b.dgbBought)||'').replace(/,/g,'')) || 0;
+    const dd  = parseFloat(((ddEl  ? ddEl.value  : b.ddTraded )||'').replace(/,/g,'')) || 0;
+    return dgb > 0 && dd > 0;
+  }));
+
+  function setSection(sectionId, enabled) {
+    const sec = document.getElementById(sectionId);
+    if (!sec) return;
+    sec.style.opacity = enabled ? '1' : '0.38';
+    sec.style.pointerEvents = enabled ? '' : 'none';
+    sec.querySelectorAll('input:not([readonly]), select, button').forEach(el => {
+      if (enabled) el.removeAttribute('disabled');
+      else el.setAttribute('disabled', '');
+    });
+  }
+
+  setSection('tc-stage-buy-' + id, lockDone);
+  setSection('tc-stage-sell-' + id, buyDone);
+
+  ['buy','sell'].forEach(stage => {
+    const hint = document.getElementById('tc-stage-hint-' + stage + '-' + id);
+    if (!hint) return;
+    const done = stage === 'buy' ? lockDone : buyDone;
+    hint.style.display = done ? 'none' : 'inline';
+  });
+}
+
+function renderCycleCard(c) {
+  const stats = computeStats(c);
+  const statusClass = c.status;
+  const isActive = c.status === 'active';
+  const dis = isActive ? '' : 'disabled';
+  const disStyle = isActive ? '' : '';
+  const summaryParts = [
+    c.dgbLocked ? fmt(parseFloat((c.dgbLocked||'').toString().replace(/,/g,''))) + ' DGB' : '',
+    c.mintRate ? MINT_RATE_LABELS[c.mintRate] || '' : '',
+    c.unlockDate ? 'Eligible Unlock: ' + fmtDate(c.unlockDate) : ''
+  ].filter(Boolean).join(' · ');
+
+  const mintOptions = [['', 'Choose a Mint Rate / Lock Period'], ...['20','25','28.6','33.3','36.4','40','44.4','47.2','50'].map(v => [v, MINT_RATE_LABELS[v]])]
+    .map(([v, l]) => `<option value="${v}" ${c.mintRate===v?'selected':''}>${l}</option>`).join('');
+
+  const autoFieldStyle = 'background:var(--bg); color:var(--muted); border-color:var(--border); cursor:default;';
+  const lockPriceVal = fmtPrice(stats.dgbLockPrice);
+
+  const { lockDone, buyDone } = stageGates(c);
+  const buyGated  = isActive && !lockDone;
+  const sellGated = isActive && !buyDone;
+
+  const gatedSectionStyle = (gated) =>
+    `style="opacity:${gated ? '0.38' : '1'};pointer-events:${gated ? 'none' : ''};transition:opacity 0.2s;"`;
+
+  const hintStyle = 'font-size:9px;color:var(--muted);font-weight:400;letter-spacing:0;text-transform:none;margin-left:6px;font-family:Montserrat,sans-serif;';
+
+  return `<div class="tracker-card status-${statusClass}" id="tc-${c.id}">
+    <div class="tracker-card-header" onclick="toggleCycleCard('${c.id}')">
+      <div style="min-width:0;flex:1;display:flex;flex-direction:column;gap:3px;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          ${isActive
+            ? `<span class="tracker-title" id="tc-title-${c.id}" contenteditable="true" data-field="label" data-id="${c.id}" style="outline:none; border-bottom:1px solid transparent; padding:1px 2px; border-radius:3px; cursor:text;" onfocus="this.style.borderBottomColor='var(--primary)'" onblur="handleTitleBlur(this, this.dataset.id)" onpaste="event.preventDefault(); const remaining=50-this.textContent.replace(/\u00a0/g,' ').length; if(remaining<=0)return; const t=((event.clipboardData||window.clipboardData).getData('text').slice(0,remaining)).replace(/[\u00a0]/g,' ').replace(/^ +/,'').replace(/ {2,}/g,' ').replace(/ +$/,''); document.execCommand('insertText',false,t);" onkeydown="handleTitleKeydown(event, this)" onclick="event.stopPropagation()">${c.label||'New Cycle'}</span>`
+            : `<span class="tracker-title" id="tc-title-${c.id}">${c.label||'New Cycle'}</span>`}
+          <span class="tracker-status ${statusClass}">${c.status.charAt(0).toUpperCase()+c.status.slice(1)}</span>
+        </div>
+        <div id="tc-summary-${c.id}" style="font-size:11px;color:var(--muted);font-family:'Montserrat',sans-serif;"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:4px;flex-shrink:0;">
+        <span class="tc-chevron" id="tc-chevron-${c.id}"><svg width="6" height="10" viewBox="0 0 6 10" style="display:block;transform:rotate(${window._openCards.has(c.id) ? '90' : '0'}deg);transition:transform 0.25s ease;"><path d="M0 0l6 5-6 5z" fill="#6b7280"/></svg></span>
+      </div>
+    </div>
+    <div id="tc-body-${c.id}" class="tracker-card-body${window._openCards.has(c.id) ? ' open' : ''}" ${disStyle} onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"><div style="padding:0 14px 14px 14px;border-top:1px solid var(--border);margin-top:0;"><div style="margin-top:14px;">
+
+      <!-- GROUP: LOCK & MINT (always active) -->
+      <div class="group-label" style="margin-bottom:8px;">Lock &amp; Mint</div>
+      <div class="tracker-grid">
+        <div class="tracker-field"><label>DGB Locked</label><input type="text" inputmode="numeric" data-field="dgbLocked" value="${c.dgbLocked ? parseFloat(c.dgbLocked).toLocaleString() : ''}" ${dis}></div>
+        <div class="tracker-field"><label>Mint Rate / Lock Period</label><select data-field="mintRate" ${dis}>${mintOptions}</select></div>
+        <div class="tracker-field"><label>Lock Date</label><div style="display:flex;gap:6px;align-items:center;"><div class="date-combo${!isActive ? ' disabled' : ''}" id="tc-datecombo-${c.id}" style="flex:1;"><input type="text" placeholder="MM/DD/YYYY" value="${c.lockDate ? fmtDateInput(c.lockDate) : ''}" id="tc-datetext-${c.id}" data-field="lockDate" data-iso="${c.lockDate}" ${dis}></div>${isActive ? `<button class="action-btn" onclick="setLockDateToday('${c.id}')" style="height:30px;line-height:30px;padding:0 10px;font-size:11px;min-width:unset;width:auto;white-space:nowrap;">Today</button>` : ''}</div></div>
+        <div class="tracker-field"><label>Eligible Unlock Date <span style="font-size:9px;color:var(--muted);">(auto)</span></label><input type="text" readonly style="${autoFieldStyle}" value="${c.unlockDate ? fmtDate(c.unlockDate) : ''}" placeholder="—" id="tc-unlockdate-${c.id}"></div>
+        <div class="tracker-field"><label>DD Minted</label><input type="text" inputmode="numeric" data-field="ddMinted" value="${fmtDD(c.ddMinted)}" ${dis}></div>
+        <div class="tracker-field"><label>DGB Lock Price <span style="font-size:9px;color:var(--muted);">(auto)</span></label><input type="text" readonly style="${autoFieldStyle}" value="${lockPriceVal}" placeholder="—" id="tc-lockprice-${c.id}"></div>
+      </div>
+
+      <!-- GROUP: BUY -->
+      <div id="tc-stage-buy-${c.id}" ${gatedSectionStyle(buyGated)}>
+        <div class="group-label" style="margin-top:14px;margin-bottom:8px;">Buy DGB<span id="tc-stage-hint-buy-${c.id}" style="${hintStyle}display:${buyGated?'inline':'none'};">— Complete Lock & Mint First</span></div>
+        <div id="tc-buys-${c.id}"></div>
+      </div>
+
+      <!-- GROUP: SELL & RECOVER -->
+      <div id="tc-stage-sell-${c.id}" ${gatedSectionStyle(sellGated)}>
+        <div class="group-label" style="margin-top:14px;margin-bottom:8px;">Sell DGB<span id="tc-stage-hint-sell-${c.id}" style="${hintStyle}display:${sellGated?'inline':'none'};">— Add a Buy DGB Entry First</span></div>
+        <div id="tc-sells-${c.id}"></div>
+      </div>
+
+      <!-- NOTES -->
+      <div style="margin-top:14px;">
+        <div class="group-label" style="margin-bottom:8px;">Notes</div>
+        <textarea data-field="notes" maxlength="500" rows="1" ${dis} style="width:100%;resize:none;overflow:hidden;line-height:1.5;font-size:14px;padding:11px;border-radius:10px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--input-text);font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s;box-sizing:border-box;word-break:break-word;overflow-wrap:anywhere;white-space:pre-wrap;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor=''" onkeydown="handleNotesKeydown(event, this)" onpaste="handleNotesPaste(event, this)">${c.notes ? c.notes.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''}</textarea>
+        <div style="text-align:right;font-size:10px;color:var(--muted);margin-top:3px;" id="notes-counter-${c.id}">${c.notes ? c.notes.length : 0}/500</div>
+      </div>
+
+      <div id="stats-${c.id}" class="tracker-stat" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--divider);display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <div class="tracker-actions" style="margin-top:0;">
+          ${isActive
+            ? `<button class="action-btn" onclick="setTrackerStatus('${c.id}','completed')">Mark Complete</button>
+               <button class="action-btn" onclick="setTrackerStatus('${c.id}','archived')">Archive</button>`
+            : `<button class="action-btn" onclick="setTrackerStatus('${c.id}','active')">Restore</button>`}
+          ${(c.status !== 'active' || trackerCycles.filter(x => x.status === 'active').length > 1) ? `<button class="action-btn danger" data-delete="${c.id}" onclick="confirmDelete('${c.id}',this)">Delete</button>` : ''}
+        </div>
+        ${c.createdAt ? `<div style="font-size:9px;color:var(--muted);font-family:'Josefin Sans',sans-serif;flex-shrink:0;">Created ${c.createdAt}</div>` : ''}
+      </div>
+    </div></div></div>
+  </div>`;
+}
+
+window._openCards = window._openCards || new Set();
+
+function toggleCycleCard(id) {
+  const body = document.getElementById('tc-body-' + id);
+  const chevron = document.getElementById('tc-chevron-' + id);
+  const open = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  if (!open) {
+    window._openCards.add(id);
+    setTimeout(() => {
+      body.querySelectorAll('textarea').forEach(ta => {
+        ta.style.height = 'auto';
+        ta.style.height = ta.scrollHeight + 'px';
+      });
+    }, 350);
+  } else {
+    window._openCards.delete(id);
+  }
+  saveOpenCards();
+  const svg = chevron ? chevron.querySelector('svg') : null;
+  if (svg) svg.style.transform = open ? 'rotate(0deg)' : 'rotate(90deg)';
+  // Update collapse all button label
+  const btn = document.getElementById('collapseAllPill');
+  if (btn) btn.textContent = window._openCards.size > 0 ? 'Collapse All' : 'Expand All';
+}
+
+function toggleCollapseAll(btn) {
+  const anyOpen = window._openCards.size > 0;
+
+  // Find the first card that is at least partially visible below the header
+  // (its bottom edge is below the header bottom)
+  const headerBottom = (document.getElementById('headerWrapper') || {}).offsetHeight || 0;
+  const allCards = Array.from(document.querySelectorAll('.tracker-card'));
+  let anchor = null;
+  for (const card of allCards) {
+    if (card.getBoundingClientRect().bottom > headerBottom + 2) { anchor = card; break; }
+  }
+  if (!anchor && allCards.length) anchor = allCards[0];
+  const anchorTopBefore = anchor ? anchor.getBoundingClientRect().top : 0;
+
+  // Disable transitions during bulk toggle to avoid mid-animation scroll jitter
+  const allBodies = document.querySelectorAll('.tracker-card-body');
+  allBodies.forEach(b => { b.style.transition = 'none'; });
+
+  if (anyOpen) {
+    trackerCycles.forEach(c => {
+      const body = document.getElementById('tc-body-' + c.id);
+      const chevron = document.getElementById('tc-chevron-' + c.id);
+      if (body) body.classList.remove('open');
+      const svg = chevron ? chevron.querySelector('svg') : null;
+      if (svg) svg.style.transform = 'rotate(0deg)';
+    });
+    window._openCards = new Set();
+    btn.textContent = 'Expand All';
+  } else {
+    trackerCycles.forEach(c => {
+      const body = document.getElementById('tc-body-' + c.id);
+      const chevron = document.getElementById('tc-chevron-' + c.id);
+      if (body) {
+        body.classList.add('open');
+        body.querySelectorAll('textarea').forEach(ta => {
+          ta.style.height = 'auto';
+          ta.style.height = ta.scrollHeight + 'px';
+        });
+      }
+      const svg = chevron ? chevron.querySelector('svg') : null;
+      if (svg) svg.style.transform = 'rotate(90deg)';
+      window._openCards.add(c.id);
+    });
+    btn.textContent = 'Collapse All';
+  }
+  saveOpenCards();
+
+  // Lock viewport: keep anchor at the same Y position relative to viewport
+  if (anchor) {
+    const anchorTopAfter = anchor.getBoundingClientRect().top;
+    window.scrollBy({ top: anchorTopAfter - anchorTopBefore, behavior: 'instant' });
+  }
+
+  // Re-enable transitions on next frame
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      allBodies.forEach(b => { b.style.transition = ''; });
+    });
+  });
+}
+
+
+const _statsDebounce = {};
+function renderTrackerStats(id) {
+  clearTimeout(_statsDebounce[id]);
+  _statsDebounce[id] = setTimeout(() => _doRenderTrackerStats(id), 16);
+}
+
+function updateHeaderSummary(id) {
+  const el = document.getElementById('tc-summary-' + id);
+  if (!el) return;
+  const c = trackerCycles.find(cc => cc.id === id);
+  if (!c) return;
+  const stats = computeStats(c);
+  const parts = [];
+
+  const ddFullyRecovered = stats.ddMinted > 0 && stats.totalDdRecovered >= stats.ddMinted;
+  const netDgb = stats.totalDgbBought - stats.totalDgbSold;
+  const ddNet = stats.totalDdRecovered - stats.totalDdSpent;
+
+  // Always show: DGB Locked · Unlock date (with calendar eligibility)
+  if (stats.dgbLocked > 0) {
+    parts.push(fmt(Math.round(stats.dgbLocked)) + ' DGB Locked');
+  }
+  if (c.unlockDate) {
+    const dateStr = 'Unlocks ' + fmtDate(c.unlockDate);
+    parts.push(ddFullyRecovered
+      ? '<span style="color:var(--gain);">' + dateStr + '</span>'
+      : dateStr);
+  }
+
+  // Fully closed — show outcome
+  if (ddFullyRecovered) {
+    // DGB result
+    if (netDgb !== 0) {
+      const pct = stats.dgbLocked > 0 ? ' (' + (netDgb > 0 ? '+' : '') + ((netDgb / stats.dgbLocked) * 100).toFixed(1) + '%)' : '';
+      const color = netDgb > 0 ? '#3b82f6' : 'var(--loss)';
+      const label = netDgb > 0 ? ' DGB Gained' : ' DGB Lost';
+      parts.push('<span style="color:' + color + ';font-weight:600;">' + fmt(Math.round(Math.abs(netDgb))) + pct + label + '</span>');
+    }
+    // DD result
+    if (ddNet > 0) {
+      parts.push('<span style="color:var(--gain);font-weight:600;">' + fmtD(ddNet) + ' DD Gained</span>');
+    } else if (ddNet < 0) {
+      parts.push('<span style="color:var(--loss);font-weight:600;">' + fmtD(Math.abs(ddNet)) + ' DD Lost</span>');
+    }
+    el.innerHTML = parts.join(' · ');
+    return;
+  }
+
+  // In progress — DD recovery status
+  if (stats.totalDdRecovered > 0 && stats.ddMinted > 0) {
+    const unlockable = ddFullyRecovered;
+    const ddColor = unlockable ? 'var(--gain)' : 'var(--muted)';
+    parts.push('<span style="color:' + ddColor + ';">' + fmtD(stats.totalDdRecovered) + ' DD Recovered</span>');
+  }
+
+  // DD still needed — sold all DGB but gap remains
+  if (stats.ddMinted > 0 && !ddFullyRecovered && stats.totalDgbBought > 0 && stats.totalDgbSold >= stats.totalDgbBought) {
+    const shortfall = stats.ddMinted - stats.totalDdRecovered;
+    parts.push('<strong style="color:var(--loss);">' + fmtD(shortfall) + ' DD to Unlock</strong>');
+  }
+
+  // Eff buy price only while buying (no sells yet)
+  if (stats.effBuyPrice > 0 && stats.totalDgbSold === 0) {
+    parts.push(fmtPrice(stats.effBuyPrice) + ' Eff. Buy');
+  }
+
+  el.innerHTML = parts.join(' · ');
+}
+
+function _doRenderTrackerStats(id) {
+  const c = trackerCycles.find(cc => cc.id === id);
+  if (!c) return;
+  const statsEl = document.getElementById('stats-' + id);
+  if (!statsEl) return;
+  const stats = computeStats(c);
+  const parts = [];
+  const ddFullyRecovered = stats.ddMinted > 0 && stats.totalDdRecovered >= stats.ddMinted;
+  const netDgb = stats.totalDgbBought - stats.totalDgbSold;
+  const extraDd = stats.totalDdSpent - stats.ddMinted;
+  const ddNet = stats.totalDdRecovered - stats.totalDdSpent;
+
+  // 1. DD Minted
+  if (stats.ddMinted) parts.push('<span><strong>' + fmtD(stats.ddMinted) + '</strong>DD Minted</span>');
+
+  // 2. Extra DD Used (if any brought in from other cycles)
+  if (extraDd > 0 && stats.ddMinted > 0) {
+    parts.push('<span><strong style="color:var(--muted);">' + fmtD(extraDd) + '</strong>Extra DD Used</span>');
+  }
+
+  // 3. DGB Bought
+  if (stats.totalDgbBought) parts.push('<span><strong>' + fmt(Math.round(stats.totalDgbBought)) + '</strong>DGB Bought</span>');
+
+  // 4. DD Recovered
+  if (stats.totalDdRecovered) {
+    const unlockable = stats.ddMinted > 0 && stats.totalDdRecovered >= stats.ddMinted;
+    const color = unlockable ? 'color:var(--gain);' : '';
+    parts.push('<span><strong style="' + color + '">' + fmtD(stats.totalDdRecovered) + '</strong>DD Recovered</span>');
+  }
+
+  // 5. DGB Gained/Lost (only when cycle fully closed)
+  if (netDgb > 0 && ddFullyRecovered) {
+    const gainPct = stats.dgbLocked > 0 ? ' (+' + ((netDgb / stats.dgbLocked) * 100).toFixed(1) + '%)' : '';
+    parts.push('<span><strong style="color:#3b82f6;">' + fmt(Math.round(netDgb)) + gainPct + '</strong>DGB Gained</span>');
+  }
+  if (netDgb < 0 && ddFullyRecovered) {
+    const lossPct = stats.dgbLocked > 0 ? ' (' + ((netDgb / stats.dgbLocked) * 100).toFixed(1) + '%)' : '';
+    parts.push('<span><strong style="color:var(--loss);">' + fmt(Math.round(Math.abs(netDgb))) + lossPct + '</strong>DGB Lost</span>');
+  }
+
+  // 6. DD still needed — sold all DGB but not enough DD recovered
+  const ddStillNeeded = stats.ddMinted > 0 && !ddFullyRecovered
+    && stats.totalDgbBought > 0 && stats.totalDgbSold >= stats.totalDgbBought;
+  if (ddStillNeeded) {
+    const shortfall = stats.ddMinted - stats.totalDdRecovered;
+    parts.push('<span><strong style="color:var(--loss);">' + fmtD(shortfall) + '</strong>DD to Unlock</span>');
+  }
+
+  // 7. DD Gained/Lost — net DD result vs total spent
+  if (ddNet > 0 && stats.totalDdSpent > 0) {
+    parts.push('<span><strong style="color:var(--gain);">' + fmtD(ddNet) + '</strong>DD Gained</span>');
+  }
+  if (ddNet < 0 && ddFullyRecovered) {
+    parts.push('<span><strong style="color:var(--loss);">' + fmtD(Math.abs(ddNet)) + '</strong>DD Lost</span>');
+  }
+
+  statsEl.innerHTML = parts.join('');
+  updateHeaderSummary(id);
+}
+
+// ═══════════════════════════════════════════════════════
+//  SAVE / LOAD CODE
+// ═══════════════════════════════════════════════════════
+const KEY_MAP = {'label':'l','status':'s','dgbLocked':'dg','mintRate':'mr','lockDate':'ld','unlockDate':'ud','ddMinted':'dd','buys':'bu','sells':'se','notes':'no','createdAt':'ca','createdAtRaw':'cr'};
+const REV_MAP = {'l':'label','s':'status','dg':'dgbLocked','mr':'mintRate','ld':'lockDate','ud':'unlockDate','dd':'ddMinted','bu':'buys','se':'sells','no':'notes','ca':'createdAt','cr':'createdAtRaw'};
+
+function compressCycles(cycles) {
+  return cycles.map(c => {
+    const out = { id: c.id };
+    Object.entries(KEY_MAP).forEach(([long, short]) => {
+      if (c[long] !== undefined && c[long] !== '') out[short] = c[long];
+    });
+    return out;
+  });
+}
+
+function decompressCycles(cycles) {
+  return cycles.map(c => {
+    const out = { id: c.id || '', label: '', status: 'active', dgbLocked: '', mintRate: '25',
+      lockDate: '', unlockDate: '', ddMinted: '', buys: [], sells: [], notes: '', createdAt: '', createdAtRaw: '' };
+
+    Object.entries(REV_MAP).forEach(([short, long]) => {
+      if (c[short] !== undefined) out[long] = c[short];
+    });
+    // Ensure createdAtRaw exists for reliable sort
+    if (!out.createdAtRaw && out.createdAt) {
+      try { out.createdAtRaw = new Date(out.createdAt).toISOString(); } catch(e) {}
+    }
+    if (!out.createdAtRaw && out.id) {
+      try { out.createdAtRaw = new Date(parseInt(out.id.slice(0, 8), 36)).toISOString(); } catch(e) {}
+    }
+    return out;
+  });
+}
+
+function saveTrackerUrl(btn) {
+  copyShareLink(btn);
+}
+
+function loadTrackerFromUrl() {
+  const p = new URLSearchParams(location.search);
+  if (!p.has('tracker')) return false;
+  try {
+    const json = decodeURIComponent(atob(p.get('tracker')));
+    const data = JSON.parse(json);
+    if (!Array.isArray(data)) return false;
+    trackerCycles = decompressCycles(data);
+    // Restore open state from URL params
+    const validIds = new Set(trackerCycles.map(c => c.id));
+    if (p.has('open')) {
+      const ids = p.get('open').split(',').filter(id => validIds.has(id));
+      window._openCards = new Set(ids);
+    } else {
+      // 'open' param absent means nothing was open — respect that
+      window._openCards = new Set();
+    }
+    if (p.has('sort')) {
+      const sortEl = document.getElementById('trackerSort');
+      if (sortEl) sortEl.value = p.get('sort');
+    }
+    // Clean URL without reloading
+    const clean = location.pathname + (p.has('s') ? '?' + p.toString().replace(/[&?]?tracker=[^&]*/g, '').replace(/^&/, '') : '');
+    history.replaceState(null, '', clean);
+    return true;
+  } catch(e) { return false; }
+}
+
+// ═══════════════════════════════════════════════════════
+//  EXPORT
+// ═══════════════════════════════════════════════════════
+function exportTracker(btn) {
+  if (trackerCycles.length === 0) { flashBtn(btn, 'No Cycles!', 'Export'); return; }
+  flushAllCyclesToData();
+  const sortVal = (document.getElementById('trackerSort') || {}).value || 'newest';
+  const sortFn = getSortFn(sortVal);
+  const groups = [
+    { label: 'ACTIVE', cycles: trackerCycles.filter(c => c.status === 'active').sort(sortFn) },
+    { label: 'COMPLETED', cycles: trackerCycles.filter(c => c.status === 'completed').sort(sortFn) },
+    { label: 'ARCHIVED', cycles: trackerCycles.filter(c => c.status === 'archived').sort(sortFn) },
+  ].filter(g => g.cycles.length > 0);
+  let txt = 'My DigiDollar Cycles\n';
+  txt += '='.repeat(40) + '\n';
+  groups.forEach(group => {
+    txt += '\n' + group.label + '\n' + '-'.repeat(20) + '\n';
+    group.cycles.forEach((c, idx) => {
+    const stats = computeStats(c);
+    txt += `${c.label} — ${c.status.toUpperCase()}\n`;
+    if (c.lockDate) txt += `  Lock Date: ${c.lockDate}${c.unlockDate ? ' → Eligible Unlock: ' + c.unlockDate : ''}\n`;
+    if (c.dgbLocked) txt += `  DGB Locked: ${c.dgbLocked}\n`;
+    txt += `  Mint Rate: ${MINT_RATE_LABELS[c.mintRate] || c.mintRate}\n`;
+    if (c.ddMinted) txt += `  DD Minted: ${fmtD(parseFloat(c.ddMinted))}\n`;
+    if (stats.dgbLockPrice > 0) txt += `  DGB Lock Price: ${fmtPrice(stats.dgbLockPrice)}\n`;
+    (c.buys||[]).forEach((b,i) => {
+      const dgb = parseFloat((b.dgbBought||'').replace(/,/g,'')) || 0;
+      const dd  = parseFloat(b.ddTraded) || 0;
+      if (!dgb && !dd) return; // skip empty entries
+      const eff = (dgb > 0 && dd > 0) ? dd / dgb : 0;
+      txt += `  Buy ${i+1}: ${fmt(Math.round(dgb))} DGB, ${fmtD(dd)} DD spent${eff > 0 ? ' @ ' + fmtPrice(eff) + ' eff.' : ''}\n`;
+    });
+    (c.sells||[]).forEach((s,i) => {
+      const dgb = parseFloat((s.dgbSold||'').replace(/,/g,'')) || 0;
+      const dd  = parseFloat(s.ddRecovered) || 0;
+      if (!dgb && !dd) return; // skip empty entries
+      const eff = (dgb > 0 && dd > 0) ? dd / dgb : 0;
+      txt += `  Sell ${i+1}: ${fmt(Math.round(dgb))} DGB, ${fmtD(dd)} DD recovered${eff > 0 ? ' @ ' + fmtPrice(eff) + ' eff.' : ''}\n`;
+    });
+    // Outcome — only when fully closed
+    const ddFullyRec = stats.ddMinted > 0 && stats.totalDdRecovered >= stats.ddMinted;
+    const netDgb = stats.totalDgbBought - stats.totalDgbSold;
+    const extraDd = stats.totalDdSpent - stats.ddMinted;
+    const ddNet = stats.totalDdRecovered - stats.totalDdSpent;
+    if (extraDd > 0 && stats.ddMinted > 0) txt += `  Extra DD Used: ${fmtD(extraDd)}\n`;
+    if (ddFullyRec) {
+      if (netDgb > 0) {
+        const pct = stats.dgbLocked > 0 ? ' (+' + ((netDgb / stats.dgbLocked) * 100).toFixed(1) + '%)' : '';
+        txt += `  DGB Gained: ${fmt(Math.round(netDgb))}${pct}\n`;
+      } else if (netDgb < 0) {
+        const pct = stats.dgbLocked > 0 ? ' (' + ((netDgb / stats.dgbLocked) * 100).toFixed(1) + '%)' : '';
+        txt += `  DGB Lost: ${fmt(Math.round(Math.abs(netDgb)))}${pct}\n`;
+      }
+      if (ddNet > 0) txt += `  DD Gained: ${fmtD(ddNet)}\n`;
+      else if (ddNet < 0) txt += `  DD Lost: ${fmtD(Math.abs(ddNet))}\n`;
+    } else if (stats.ddMinted > 0 && stats.totalDgbBought > 0 && stats.totalDgbSold >= stats.totalDgbBought) {
+      txt += `  DD to Unlock: ${fmtD(stats.ddMinted - stats.totalDdRecovered)}\n`;
+    }
+      if (c.notes) txt += `  Notes: ${c.notes}\n`;
+      txt += '\n';
+    });
+  });
+  txt += 'DigiDollar Cycle Tracker — dd.luce.finance';
+  txt += '\nFind this tool useful? DGB tips are always appreciated — ' + TIP_ADDR;
+  navigator.clipboard.writeText(txt).then(() => flashBtn(btn, 'Copied!', 'Export'));
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  TIP ADDRESS (shared, rendered once)
+// ═══════════════════════════════════════════════════════
+const TIP_ADDR = 'dgb1qut6s660nsj2xagjnr4cqmyqrd8f9z5s9pxqc60';
+function renderTipAddress() {
+  [document.getElementById('tipAddress'), document.getElementById('tipAddress2')].forEach(tipEl => {
+    if (!tipEl) return;
+    tipEl.innerHTML = 'Find this tool useful? DGB tips are always appreciated &mdash;<br>'
+      + '<span style="font-family:\'Montserrat\',sans-serif;letter-spacing:0.02em;color:var(--text);font-size:11px;word-break:break-all;">' + TIP_ADDR + '</span>'
+      + ' <a href="javascript:void(0)" class="live-pill" style="width:90px;text-align:center;display:inline-block;" onmousedown="event.preventDefault();navigator.clipboard.writeText(TIP_ADDR).then(()=>{const t=event.target,o=t.dataset.orig||t.textContent;t.dataset.orig=o;clearTimeout(t._ct);t.textContent=\'Copied!\';t._ct=setTimeout(()=>{t.textContent=o;},1500)})">Copy Address</a>';
+  });
+}
+renderTipAddress();
+
+// Init tracker
+loadTrackerFromStorage();
+if (loadTrackerFromUrl()) {
+  if (trackerCycles.length === 0) addTrackerCycle();
+  const urlTab = new URLSearchParams(location.search).get('tab');
+  const showTracker = urlTab === 'tracker';
+  if (showTracker) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-tracker').classList.add('active');
+    document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+    const sub = document.getElementById('trackerSubHeader');
+    if (sub) sub.classList.add('visible');
+  }
+  renderTracker();
+} else {
+  if (trackerCycles.length === 0) addTrackerCycle();
+  const lastTab = localStorage.getItem('dd_last_tab');
+  if (lastTab === 'tracker') {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-tracker').classList.add('active');
+    document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+    const sub = document.getElementById('trackerSubHeader');
+    if (sub) sub.classList.add('visible');
+    renderTracker();
+  }
+}
+
+// Recalc all textarea heights after layout settles
+setTimeout(() => {
+  document.querySelectorAll('.tracker-card-body.open textarea').forEach(ta => {
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  });
+}, 100);
+
+// Initialize header CSS variable and keep it in sync
+setHeaderOffset();
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  setHeaderOffset();
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    document.querySelectorAll('.tracker-card-body.open textarea').forEach(ta => {
+      ta.style.height = 'auto';
+      ta.style.height = ta.scrollHeight + 'px';
+    });
+  }, 100);
+});
+
 </script>
 </body>
 </html>
