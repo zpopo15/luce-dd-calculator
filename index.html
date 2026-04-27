@@ -215,7 +215,7 @@
     #headerWrapper { position:fixed; top:0; left:0; right:0; z-index:9999; background:var(--bg); transition:background 0.3s ease; transform:translateZ(0); -webkit-transform:translateZ(0); will-change:transform; backface-visibility:hidden; -webkit-backface-visibility:hidden; isolation:isolate; contain:layout style; }
     #headerSpacer { width:100%; }
     /* Solid backdrop that fills any gap above the header during iOS momentum scroll */
-    #headerBackdrop { position:fixed; top:-200px; left:0; right:0; height:200px; background:var(--bg); z-index:9998; pointer-events:none; transform:translateZ(0); }
+    #headerBackdrop { position:fixed; top:-200px; left:0; right:0; height:calc(200px + var(--header-h, 160px)); background:var(--bg); z-index:9998; pointer-events:none; transform:translateZ(0); -webkit-transform:translateZ(0); will-change:transform; }
   </style>
 </head>
 <body>
